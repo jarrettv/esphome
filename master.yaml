@@ -1,0 +1,32 @@
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome master.yaml run
+
+esphome:
+  name: master
+  platform: ESP8266
+  board: d1_mini_lite
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+logger:
+  level: INFO
+  esp8266_store_log_strings_in_flash: False
+
+api:
+
+ota:
+
+i2c:
+  scan: False
+
+sensor:
+  - platform: bmp280
+    temperature:
+      name: "Master Temp"
+      id: master_temp
+      oversampling: 16x
+    pressure:
+      name: "Master Pressure"
+      id: master_press
+    update_interval: 60s
