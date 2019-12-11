@@ -1,16 +1,14 @@
-#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome master.yaml run
-
 esphome:
-  name: master
+  name: backporch
   platform: ESP8266
   board: d1_mini_lite
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
+                               
 logger:
-  level: INFO
+  level: DEBUG
   esp8266_store_log_strings_in_flash: False
 
 api:
@@ -23,14 +21,14 @@ i2c:
 sensor:
   - platform: bme280
     temperature:
-      id: master_temp
-      name: "Master Temp"
+      id: backporch_temp
+      name: "Backporch Temp"
       oversampling: 16x
     pressure:
-      id: master_press
-      name: "Master Pressure"
+      id: backporch_press
+      name: "Backporch Pressure"
     humidity:
-      id: "master_humid"
-      name: "Master Humidity"
+      id: "backporch_humid"
+      name: "Backporch Humidity"
     address: 0x76
     update_interval: 60s

@@ -1,0 +1,44 @@
+esphome:
+  name: crawl_back
+  platform: ESP8266
+  board: d1_mini_lite
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+                               
+logger:
+  level: INFO
+  esp8266_store_log_strings_in_flash: False
+
+api:
+
+ota:
+
+i2c:
+  scan: False
+
+light:
+  - platform: monochromatic
+    name: "Crawlspace Back Lights"
+    output: crawl_back_pwm
+
+output:
+  - platform: esp8266_pwm
+    id: crawl_back_pwm
+    pin: D0
+
+sensor:
+  - platform: bme280
+    temperature:
+      id: crawl_back_temp
+      name: "Crawlspace Back Temp"
+      oversampling: 16x
+    pressure:
+      id: crawl_back_press
+      name: "Crawlspace Back Pressure"
+    humidity:
+      id: "crawl_back_humid"
+      name: "Crawlspace Back Humidity"
+    address: 0x76
+    update_interval: 60s
