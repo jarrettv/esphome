@@ -1,6 +1,6 @@
 substitutions:
-  device_name: crawl_back
-  display_name: Crawlspace Back
+  device_name: crawl_main
+  display_name: Crawlspace Main
 
 esphome:
   name: $device_name

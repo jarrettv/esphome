@@ -1,6 +1,8 @@
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome attic_upper.yaml run
+
 substitutions:
-  device_name: crawl_back
-  display_name: Crawlspace Back
+  device_name: attic_upper
+  display_name: Attic Upper
 
 esphome:
   name: $device_name
@@ -22,21 +24,20 @@ ota:
 i2c:
   scan: False
 
-# switch:
-#   - platform: gpio
-#     pin: D0
-#     name: "Crawlspace Back Lights"
-
-light:
-  - platform: monochromatic
-    name: ${display_name} Lights
-    output: ${device_name}_pwm
-
-output:
-  - platform: esp8266_pwm
-    id: ${device_name}_pwm
+switch:
+  - platform: gpio
     pin: D0
+    id: ${device_name}_hexfet
+    name: ${display_name} Lights
 
+binary_sensor:
+  - platform: gpio
+    pin: D8
+    id: ${device_name}_button
+    device_class: light
+    on_click:
+      then:
+        - switch.toggle: ${device_name}_hexfet
 sensor:
   - platform: bme280
     temperature:

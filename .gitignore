@@ -8,3 +8,6 @@
 **/src/
 **/platformio.ini
 /secrets.yaml
+firmware.bin
+energy_meter/partitions.csv
+stairs/partitions.csv

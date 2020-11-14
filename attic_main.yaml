@@ -1,6 +1,6 @@
 substitutions:
-  device_name: crawl_back
-  display_name: Crawlspace Back
+  device_name: attic_main
+  display_name: Attic Main
 
 esphome:
   name: $device_name
@@ -22,20 +22,20 @@ ota:
 i2c:
   scan: False
 
-# switch:
-#   - platform: gpio
-#     pin: D0
-#     name: "Crawlspace Back Lights"
-
-light:
-  - platform: monochromatic
-    name: ${display_name} Lights
-    output: ${device_name}_pwm
-
-output:
-  - platform: esp8266_pwm
-    id: ${device_name}_pwm
+switch:
+  - platform: gpio
     pin: D0
+    name: ${display_name} Lights
+
+# light:
+#   - platform: monochromatic
+#     name: ${display_name} Lights
+#     output: ${device_name}_pwm
+
+# output:
+#   - platform: esp8266_pwm
+#     id: ${device_name}_pwm
+#     pin: D0
 
 sensor:
   - platform: bme280
