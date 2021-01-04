@@ -26,13 +26,16 @@ i2c:
 
 switch:
   - platform: gpio
-    pin: D0
+    pin: D8
     id: ${device_name}_hexfet
     name: ${display_name} Lights
 
 binary_sensor:
   - platform: gpio
-    pin: D8
+    pin:
+      number: D3
+      mode: INPUT_PULLUP
+      inverted: yes
     id: ${device_name}_button
     device_class: light
     on_click:

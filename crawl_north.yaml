@@ -1,4 +1,4 @@
-#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome attic_upper.yaml run
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome crawl_north.yaml run
 
 substitutions:
   device_name: crawl_north
@@ -34,7 +34,8 @@ binary_sensor:
   - platform: gpio
     pin:
       number: D3
-      # mode: INPUT_PULLDOWN_16
+      mode: INPUT_PULLUP
+      inverted: yes
     id: ${device_name}_button
     device_class: light
     on_click:
