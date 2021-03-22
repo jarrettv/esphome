@@ -1,3 +1,6 @@
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome backporch.yaml run
+
+
 esphome:
   name: backporch
   platform: ESP8266
@@ -8,7 +11,7 @@ wifi:
   password: !secret wifi_password
                                
 logger:
-  level: DEBUG
+  level: INFO
   esp8266_store_log_strings_in_flash: False
 
 api:
@@ -32,3 +35,4 @@ sensor:
       name: "Backporch Humidity"
     address: 0x76
     update_interval: 60s
+

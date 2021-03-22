@@ -1,0 +1,96 @@
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome thermostat1.yaml run
+
+
+substitutions:
+  node_name: thermostat1
+  node_friendly_name: "Downstairs Thermostat"
+
+packages:
+  esp_common: !include shared/esp__common_core.yaml
+
+esphome:
+  platform: ESP32
+  board: featheresp32
+
+status_led:
+  pin:
+    number: GPIO5
+    inverted: true
+  
+time:
+  - platform: homeassistant
+    id: esptime
+    timezone: America/Chicago
+
+i2c:
+  id: i2c_bus
+  # frequency: 400kHz
+  sda: 21
+  scl: 22
+  scan: True
+
+spi:
+  clk_pin: GPIO14
+  mosi_pin: GPIO13
+  miso_pin: GPIO12
+  
+sensor:
+  # Phototransistor ADC sensor
+  - platform: adc
+    id: adc_sensor_phototransistor
+    name: ${node_friendly_name} Phototransistor ADC
+    pin: 32
+    attenuation: 11db
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 3
+          send_first_at: 1
+    on_value:
+      then:
+        - lambda: |-
+            const float display_brightness = id(adc_sensor_phototransistor).state / 3.9;
+            id(main_lcd)->set_brightness(display_brightness);
+  # BME280 sensor
+  # - platform: bme280
+  #   address: 0x76
+  #   temperature:
+  #     id: esp_thermostat_bme280_temperature
+  #     name: ${node_friendly_name} BME280 Temperature
+  #     filters:
+  #       - offset: -0.3
+  #   humidity:
+  #     id: esp_thermostat_bme280_humidity
+  #     name: ${node_friendly_name} BME280 Humidity
+  #   pressure:
+  #     id: esp_thermostat_bme280_pressure
+  #     name: ${node_friendly_name} BME280 Pressure
+  #   update_interval: 15s
+  # # SHTC3 sensor
+  # - platform: shtcx
+  #   temperature:
+  #     id: esp_thermostat_shtcx_temperature
+  #     name: ${node_friendly_name} SHTC3 Temperature
+  #     filters:
+  #       - offset: -1.3
+  #   humidity:
+  #     id: esp_thermostat_shtcx_humidity
+  #     name: ${node_friendly_name} SHTC3 Humidity
+  #   update_interval: 15s
+
+font:
+  - file: "resources/Helvetica.ttf"
+    id: font1
+    size: 32
+
+display:
+  - platform: ssd1325_spi
+    id: main_lcd
+    model: "SSD1325 128x64"
+    cs_pin: GPIO15
+    dc_pin: GPIO16
+    reset_pin: GPIO17
+    update_interval: 1s
+    lambda: |-
+      it.strftime(0, 0, id(font1), "%r", id(esptime).now());
