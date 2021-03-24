@@ -1,22 +1,31 @@
 #sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome thermostat1.yaml run
 
-
 substitutions:
   node_name: thermostat1
   node_friendly_name: "Downstairs Thermostat"
 
-packages:
-  esp_common: !include shared/esp__common_core.yaml
-
 esphome:
+  name: ${node_name}
   platform: ESP32
   board: featheresp32
+
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
 
 status_led:
   pin:
     number: GPIO5
     inverted: true
-  
+
 time:
   - platform: homeassistant
     id: esptime
@@ -24,7 +33,7 @@ time:
 
 i2c:
   id: i2c_bus
-  # frequency: 400kHz
+  frequency: 400kHz
   sda: 21
   scl: 22
   scan: True
@@ -33,11 +42,39 @@ spi:
   clk_pin: GPIO14
   mosi_pin: GPIO13
   miso_pin: GPIO12
-  
+
+binary_sensor:
+  - platform: gpio
+    id: ${node_name}_mode_button
+    name: ${node_friendly_name} Mode Button
+    pin:
+      number: GPIO0
+      inverted: true
+    on_click:
+      min_length: 50ms
+      max_length: 500ms
+      then:
+        - lambda: 'esp32_thermostat::mode_button_click();'
+        - component.update: main_lcd
+        - script.execute: button_press
+  - platform: gpio
+    id: esp_thermostat_encoder_button
+    name: ${node_friendly_name} Encoder Button
+    pin:
+      number: GPIO2
+      inverted: true
+    on_click:
+      min_length: 50ms
+      max_length: 500ms
+      then:
+        - lambda: 'esp32_thermostat::encoder_button_click();'
+        - component.update: main_lcd
+        - script.execute: button_press
+
 sensor:
   # Phototransistor ADC sensor
   - platform: adc
-    id: adc_sensor_phototransistor
+    id: ${node_name}_phototransistor
     name: ${node_friendly_name} Phototransistor ADC
     pin: 32
     attenuation: 11db
@@ -50,39 +87,58 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            const float display_brightness = id(adc_sensor_phototransistor).state / 3.9;
+            const float display_brightness = id(${node_name}_phototransistor).state / 3.9;
             id(main_lcd)->set_brightness(display_brightness);
   # BME280 sensor
-  # - platform: bme280
-  #   address: 0x76
-  #   temperature:
-  #     id: esp_thermostat_bme280_temperature
-  #     name: ${node_friendly_name} BME280 Temperature
-  #     filters:
-  #       - offset: -0.3
-  #   humidity:
-  #     id: esp_thermostat_bme280_humidity
-  #     name: ${node_friendly_name} BME280 Humidity
-  #   pressure:
-  #     id: esp_thermostat_bme280_pressure
-  #     name: ${node_friendly_name} BME280 Pressure
-  #   update_interval: 15s
-  # # SHTC3 sensor
-  # - platform: shtcx
-  #   temperature:
-  #     id: esp_thermostat_shtcx_temperature
-  #     name: ${node_friendly_name} SHTC3 Temperature
-  #     filters:
-  #       - offset: -1.3
-  #   humidity:
-  #     id: esp_thermostat_shtcx_humidity
-  #     name: ${node_friendly_name} SHTC3 Humidity
-  #   update_interval: 15s
+  - platform: bme280
+    address: 0x76
+    temperature:
+      id: ${node_name}_bme280_temp
+      name: ${node_friendly_name} BME280 Temperature
+      filters:
+        - offset: -0.3
+    humidity:
+      id: ${node_name}_bme280_humid
+      name: ${node_friendly_name} BME280 Humidity
+    pressure:
+      id: ${node_name}_bme280_press
+      name: ${node_friendly_name} BME280 Pressure
+    update_interval: 15s
+  # SHTC3 sensor
+  - platform: shtcx
+    temperature:
+      id: ${node_name}_shtcx_temp
+      name: ${node_friendly_name} SHTC3 Temperature
+      filters:
+        - offset: -1.3
+    humidity:
+      id: ${node_name}_shtcx_humid
+      name: ${node_friendly_name} SHTC3 Humidity
+    update_interval: 15s
+  - platform: rotary_encoder
+    id: ${node_name}_encoder
+    name: ${node_friendly_name} Encoder
+    pin_a: GPIO18
+    pin_b: GPIO19
+    on_clockwise:
+      - logger.log: "Clockwise"
+    on_anticlockwise:
+      - logger.log: "Anticlockwise"
 
 font:
   - file: "resources/Helvetica.ttf"
-    id: font1
-    size: 32
+    id: font12
+    size: 12
+  - file: "resources/Helvetica.ttf"
+    id: font16
+    size: 16
+  - file: "resources/Helvetica.ttf"
+    id: font24
+    size: 24
+
+color:
+  - id: medium_gray
+    white: 50%
 
 display:
   - platform: ssd1325_spi
@@ -93,4 +149,91 @@ display:
     reset_pin: GPIO17
     update_interval: 1s
     lambda: |-
-      it.strftime(0, 0, id(font1), "%r", id(esptime).now());
+      it.rectangle(0,  0, it.get_width(), it.get_height(), id(medium_gray));
+
+      it.printf(it.get_width(), 2, id(font12), "%s", id(${node_name}_thermostat).mode);
+      // it.printf(0, 12, id(font16), "%.1f°", id(${node_name}_thermostat).target_temperature);
+
+      it.printf(it.get_width() - 4, 18, id(font24), TextAlign::TOP_RIGHT, "%.1f°", id(${node_name}_bme280_temp).state * 1.8 + 32);
+
+mcp23017:
+  - id: mcp23017_hub
+    address: 0x20
+
+switch:
+  - platform: gpio
+    id: ${node_name}_mcp23017_reset
+    name: ${node_friendly_name} MCP23017 Reset
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: 4
+      mode: OUTPUT
+      inverted: true
+  - platform: gpio
+    id: ${node_name}_G
+    name: ${node_friendly_name} Fan
+    internal: true
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 0
+      mode: OUTPUT
+  - platform: gpio
+    id: ${node_name}_Y1
+    name: ${node_friendly_name} Compressor
+    internal: true
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 1
+      mode: OUTPUT
+  - platform: gpio
+    id: ${node_name}_Y2
+    name: ${node_friendly_name} Reversing Valve
+    internal: true
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 2
+      mode: OUTPUT
+  - platform: gpio
+    id: ${node_name}_W1
+    name: ${node_friendly_name} Emergency Heat
+    internal: true
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 3
+      mode: OUTPUT
+
+climate:
+  - platform: thermostat
+    id: ${node_name}_thermostat
+    name: ${node_friendly_name}
+    sensor: ${node_name}_bme280_temp
+    hysteresis: 0.555555555555556
+    visual:
+      min_temperature: 55°F
+      max_temperature: 92°F
+      temperature_step: 1
+    default_target_temperature_low: 67°F
+    default_target_temperature_high: 72°F
+    mode: AUTO
+    cool_action:
+      - switch.turn_on:  ${node_name}_G  # fan
+      - switch.turn_on:  ${node_name}_Y1 # compressor
+      - switch.turn_on:  ${node_name}_Y2 # rev valve
+      - switch.turn_off: ${node_name}_W1 # em heat
+    heat_action:
+      - switch.turn_on:  ${node_name}_G  # fan
+      - switch.turn_on:  ${node_name}_Y1 # compressor
+      - switch.turn_off: ${node_name}_Y2 # rev valve
+      - switch.turn_off: ${node_name}_W1 # em heat
+    idle_action:
+      - switch.turn_off: ${node_name}_G  # fan
+      - switch.turn_off: ${node_name}_Y1 # compressor
+      - switch.turn_off: ${node_name}_Y2 # rev valve
+      - switch.turn_off: ${node_name}_W1 # em heat
+    fan_only_action:
+      - switch.turn_on:  ${node_name}_G  # fan
+      - switch.turn_off: ${node_name}_Y1 # compressor
+      - switch.turn_off: ${node_name}_Y2 # rev valve
+      - switch.turn_off: ${node_name}_W1 # em heat
+
