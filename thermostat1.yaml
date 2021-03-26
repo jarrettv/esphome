@@ -1,11 +1,10 @@
 #sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome thermostat1.yaml run
 
 substitutions:
-  node_name: thermostat1
   node_friendly_name: "Downstairs Thermostat"
 
 esphome:
-  name: ${node_name}
+  name: thermostat1
   platform: ESP32
   board: featheresp32
 
@@ -45,8 +44,8 @@ spi:
 
 binary_sensor:
   - platform: gpio
-    id: ${node_name}_mode_button
-    name: ${node_friendly_name} Mode Button
+    id: mode_button
+    internal: true
     pin:
       number: GPIO0
       inverted: true
@@ -54,12 +53,12 @@ binary_sensor:
       min_length: 50ms
       max_length: 500ms
       then:
-        - lambda: 'esp32_thermostat::mode_button_click();'
-        - component.update: main_lcd
-        - script.execute: button_press
+        - script.execute: toggle_fan_mode
+        - component.update: oled
+
   - platform: gpio
-    id: esp_thermostat_encoder_button
-    name: ${node_friendly_name} Encoder Button
+    id: encoder_button
+    internal: true
     pin:
       number: GPIO2
       inverted: true
@@ -67,14 +66,24 @@ binary_sensor:
       min_length: 50ms
       max_length: 500ms
       then:
-        - lambda: 'esp32_thermostat::encoder_button_click();'
-        - component.update: main_lcd
-        - script.execute: button_press
+        - script.execute: toggle_mode
+        - component.update: oled
 
 sensor:
-  # Phototransistor ADC sensor
+  - platform: rotary_encoder
+    id: encoder
+    internal: true
+    pin_a: GPIO18
+    pin_b: GPIO19
+    on_clockwise:
+      - script.execute: raise_set_temp
+      - component.update: oled
+    on_anticlockwise:
+      - script.execute: lower_set_temp
+      - component.update: oled
+
   - platform: adc
-    id: ${node_name}_phototransistor
+    id: phototransistor
     name: ${node_friendly_name} Phototransistor ADC
     pin: 32
     attenuation: 11db
@@ -87,54 +96,38 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            const float display_brightness = id(${node_name}_phototransistor).state / 3.9;
-            id(main_lcd)->set_brightness(display_brightness);
-  # BME280 sensor
+            const float brightness = id(phototransistor).state / 3.9;
+            id(oled)->set_brightness(brightness);
+            
   - platform: bme280
     address: 0x76
     temperature:
-      id: ${node_name}_bme280_temp
+      id: bme280_temp
       name: ${node_friendly_name} BME280 Temperature
-      filters:
-        - offset: -0.3
     humidity:
-      id: ${node_name}_bme280_humid
+      id: bme280_humid
       name: ${node_friendly_name} BME280 Humidity
     pressure:
-      id: ${node_name}_bme280_press
+      id: bme280_press
       name: ${node_friendly_name} BME280 Pressure
     update_interval: 15s
-  # SHTC3 sensor
+    
   - platform: shtcx
     temperature:
-      id: ${node_name}_shtcx_temp
+      id: shtcx_temp
       name: ${node_friendly_name} SHTC3 Temperature
-      filters:
-        - offset: -1.3
     humidity:
-      id: ${node_name}_shtcx_humid
+      id: shtcx_humid
       name: ${node_friendly_name} SHTC3 Humidity
     update_interval: 15s
-  - platform: rotary_encoder
-    id: ${node_name}_encoder
-    name: ${node_friendly_name} Encoder
-    pin_a: GPIO18
-    pin_b: GPIO19
-    on_clockwise:
-      - logger.log: "Clockwise"
-    on_anticlockwise:
-      - logger.log: "Anticlockwise"
 
 font:
-  - file: "resources/Helvetica.ttf"
+  - file: "resources/PressStart2P.ttf"
     id: font12
     size: 12
-  - file: "resources/Helvetica.ttf"
-    id: font16
-    size: 16
-  - file: "resources/Helvetica.ttf"
-    id: font24
-    size: 24
+  - file: "resources/PressStart2P.ttf"
+    id: font6
+    size: 6
 
 color:
   - id: medium_gray
@@ -142,19 +135,23 @@ color:
 
 display:
   - platform: ssd1325_spi
-    id: main_lcd
+    id: oled
     model: "SSD1325 128x64"
     cs_pin: GPIO15
     dc_pin: GPIO16
     reset_pin: GPIO17
-    update_interval: 1s
+    update_interval: 200ms
     lambda: |-
-      it.rectangle(0,  0, it.get_width(), it.get_height(), id(medium_gray));
+      auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
+      auto fan_mod = id(apply_fan_mode_timeout).is_running() ? id(soft_fan_mode) : id(tstat).fan_mode;
+      auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 2;
 
-      it.printf(it.get_width(), 2, id(font12), "%s", id(${node_name}_thermostat).mode);
-      // it.printf(0, 12, id(font16), "%.1f°", id(${node_name}_thermostat).target_temperature);
-
-      it.printf(it.get_width() - 4, 18, id(font24), TextAlign::TOP_RIGHT, "%.1f°", id(${node_name}_bme280_temp).state * 1.8 + 32);
+      // it.printf(it.get_width(), 2, id(font12), "%s", id(tstat).mode);
+      it.printf(0, 12, id(font6), "%.1f°", id(tstat).target_temperature);
+      it.printf(32, 12, id(font6), "%.1f°", id(tstat).target_temperature_low);
+      it.printf(64, 12, id(font6), "%.1f°", id(tstat).target_temperature_high);
+      it.printf(96, 12, id(font6), "%.1f°", temp);
+      it.printf(it.get_width() - 4, 18, id(font12), TextAlign::TOP_RIGHT, "%.1f°", id(bme280_temp).state * 1.8 + 32);
 
 mcp23017:
   - id: mcp23017_hub
@@ -162,41 +159,44 @@ mcp23017:
 
 switch:
   - platform: gpio
-    id: ${node_name}_mcp23017_reset
-    name: ${node_friendly_name} MCP23017 Reset
+    id: mcp23017_reset
     internal: true
     restore_mode: ALWAYS_OFF
     pin:
       number: 4
       mode: OUTPUT
       inverted: true
+
+    # Fan G green wire
   - platform: gpio
-    id: ${node_name}_G
-    name: ${node_friendly_name} Fan
+    id: triac_G
     internal: true
     pin:
       mcp23xxx: mcp23017_hub
       number: 0
       mode: OUTPUT
+
+    # Compressor Y1 yellow wire
   - platform: gpio
-    id: ${node_name}_Y1
-    name: ${node_friendly_name} Compressor
+    id: triac_Y1
     internal: true
     pin:
       mcp23xxx: mcp23017_hub
       number: 1
       mode: OUTPUT
+
+    # Reversing valve O/C orange wire, on for cooling
   - platform: gpio
-    id: ${node_name}_Y2
-    name: ${node_friendly_name} Reversing Valve
+    id: triac_Y2
     internal: true
     pin:
       mcp23xxx: mcp23017_hub
       number: 2
       mode: OUTPUT
+
+    # Aux heat W1 white wire
   - platform: gpio
-    id: ${node_name}_W1
-    name: ${node_friendly_name} Emergency Heat
+    id: triac_W1
     internal: true
     pin:
       mcp23xxx: mcp23017_hub
@@ -205,9 +205,9 @@ switch:
 
 climate:
   - platform: thermostat
-    id: ${node_name}_thermostat
+    id: tstat
     name: ${node_friendly_name}
-    sensor: ${node_name}_bme280_temp
+    sensor: bme280_temp
     hysteresis: 0.555555555555556
     visual:
       min_temperature: 55°F
@@ -215,25 +215,99 @@ climate:
       temperature_step: 1
     default_target_temperature_low: 67°F
     default_target_temperature_high: 72°F
-    mode: AUTO
     cool_action:
-      - switch.turn_on:  ${node_name}_G  # fan
-      - switch.turn_on:  ${node_name}_Y1 # compressor
-      - switch.turn_on:  ${node_name}_Y2 # rev valve
-      - switch.turn_off: ${node_name}_W1 # em heat
+      - switch.turn_on:  triac_G  # fan
+      - switch.turn_on:  triac_Y1 # compressor
+      - switch.turn_on:  triac_Y2 # rev valve
+      - switch.turn_off: triac_W1 # em heat
     heat_action:
-      - switch.turn_on:  ${node_name}_G  # fan
-      - switch.turn_on:  ${node_name}_Y1 # compressor
-      - switch.turn_off: ${node_name}_Y2 # rev valve
-      - switch.turn_off: ${node_name}_W1 # em heat
+      - switch.turn_on:  triac_G  # fan
+      - switch.turn_on:  triac_Y1 # compressor
+      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W1 # em heat
     idle_action:
-      - switch.turn_off: ${node_name}_G  # fan
-      - switch.turn_off: ${node_name}_Y1 # compressor
-      - switch.turn_off: ${node_name}_Y2 # rev valve
-      - switch.turn_off: ${node_name}_W1 # em heat
+      - switch.turn_off: triac_G  # fan
+      - switch.turn_off: triac_Y1 # compressor
+      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W1 # em heat
     fan_only_action:
-      - switch.turn_on:  ${node_name}_G  # fan
-      - switch.turn_off: ${node_name}_Y1 # compressor
-      - switch.turn_off: ${node_name}_Y2 # rev valve
-      - switch.turn_off: ${node_name}_W1 # em heat
+      - switch.turn_on:  triac_G  # fan
+      - switch.turn_off: triac_Y1 # compressor
+      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W1 # em heat
 
+globals:
+  - id: soft_mode
+    type: climate::ClimateMode
+  - id: soft_fan_mode
+    type: climate::ClimateFanMode
+  - id: soft_set_temp
+    type: float
+
+script:
+  - id: toggle_mode
+    then:
+      - lambda: |-
+          switch(id(tstat).mode) {
+            case CLIMATE_MODE_OFF:
+              id(soft_mode) = CLIMATE_MODE_AUTO;
+              break;
+            case CLIMATE_MODE_AUTO:
+              id(soft_mode) = CLIMATE_MODE_COOL;
+              break;
+            case CLIMATE_MODE_COOL:
+              id(soft_mode) = CLIMATE_MODE_HEAT;
+              break;
+            default:
+              id(soft_mode) = CLIMATE_MODE_OFF;
+          }
+      - script.execute: apply_mode_timeout
+
+  - id: apply_mode_timeout
+    mode: restart
+    then:
+      - delay: 2500ms
+      - lambda: id(tstat).mode = id(soft_mode);
+      - component.update: oled
+
+  - id: toggle_fan_mode
+    then:
+      - lambda: |-
+          switch(id(tstat).fan_mode) {
+            case CLIMATE_FAN_AUTO:
+              id(soft_fan_mode) = CLIMATE_FAN_ON;
+              break;
+            default:
+              id(soft_fan_mode) = CLIMATE_FAN_AUTO;
+          }
+      - script.execute: apply_fan_mode_timeout
+
+  - id: apply_fan_mode_timeout
+    mode: restart
+    then:
+      - delay: 2500ms
+      - lambda: id(tstat).fan_mode = id(soft_fan_mode);
+      - component.update: oled
+
+  - id: raise_set_temp
+    then:
+      - lambda: |-
+          // TODO: rules?
+          id(soft_set_temp) = id(tstat).target_temperature_low + 2 + 1;
+      - script.execute: apply_set_temp_timeout
+
+  - id: lower_set_temp
+    then:
+      - lambda: |-
+          // TODO: rules?
+          id(soft_set_temp) = id(tstat).target_temperature_low + 2 - 1;
+      - script.execute: apply_set_temp_timeout
+
+  - id: apply_set_temp_timeout
+    mode: restart
+    then:
+      - delay: 2500ms
+      - lambda: |-
+          id(tstat).target_temperature_low = id(soft_set_temp) - 2;
+          id(tstat).target_temperature_high = id(soft_set_temp) + 2;
+      - component.update: oled
