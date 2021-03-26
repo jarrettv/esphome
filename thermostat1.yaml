@@ -151,7 +151,7 @@ display:
       it.printf(32, 12, id(font6), "%.1f°", id(tstat).target_temperature_low);
       it.printf(64, 12, id(font6), "%.1f°", id(tstat).target_temperature_high);
       it.printf(96, 12, id(font6), "%.1f°", temp);
-      it.printf(it.get_width() - 4, 18, id(font12), TextAlign::TOP_RIGHT, "%.1f°", id(bme280_temp).state * 1.8 + 32);
+      it.printf(it.get_width() - 4, 32, id(font12), TextAlign::TOP_RIGHT, "%.1f°", id(bme280_temp).state * 1.8 + 32);
 
 mcp23017:
   - id: mcp23017_hub
