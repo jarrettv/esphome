@@ -122,9 +122,9 @@ sensor:
     update_interval: 30s
 
 font:
-  - file: "resources/Helvetica.ttf"
-    id: font24
-    size: 24
+  # - file: "resources/Helvetica.ttf"
+  #   id: font24
+  #   size: 24
   - file: "resources/PressStart2P.ttf"
     id: font12
     size: 16
@@ -146,14 +146,32 @@ display:
     update_interval: 200ms
     lambda: |-
       auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
-      auto fan_mod = id(apply_fan_mode_timeout).is_running() ? id(soft_fan_mode) : id(tstat).fan_mode;
-      auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 2;
+      auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(soft_fan_mode) : id(tstat).fan_mode;
+      auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 1.11111111111;
+      temp = (temp * 1.8) + 32;
 
-      it.printf(4, 54, id(font6), "%.1f", id(tstat).target_temperature_low);
+      it.printf(it.get_width() / 2, 0, id(font6), TextAlign::TOP_CENTER, "%s - %s", climate_mode_to_string(mode), climate_action_to_string(id(tstat).action));
+
+      it.printf((it.get_width() / 2) + 3, 14, id(font12), TextAlign::TOP_CENTER, "%.1f°", (id(bme280_temp).state * 1.8) + 32);
+
       it.printf(it.get_width() / 2, 54, id(font6), TextAlign::TOP_CENTER, "%.1f", temp);
-      it.printf(it.get_width() - 4, 54, id(font6), TextAlign::TOP_RIGHT, "%.1f", id(tstat).target_temperature_high);
+      if (id(apply_set_temp_timeout).is_running()) {
+        // TODO: draw cool image
 
-      it.printf(it.get_width() / 2, 12, id(font24), TextAlign::TOP_CENTER, "%.1f°", id(bme280_temp).state);
+        // draw low temp
+        it.printf(3, 54, id(font6), "%.1f", temp - 2);
+
+        // draw high temp
+        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.1f", temp + 2);
+      } else {
+
+        // draw time
+        it.strftime(3, 54, id(font6), "%H:%M", id(esptime).now());
+
+        // draw humidity
+        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.1f%%", id(bme280_humid).state);
+      }
+
 
 mcp23017:
   - id: mcp23017_hub
@@ -210,13 +228,13 @@ climate:
     id: tstat
     name: ${node_friendly_name}
     sensor: bme280_temp
-    hysteresis: 0.5 # 0.555555555555556
+    hysteresis: 0.555555555555556
     visual:
-      min_temperature: 12 # 55°F
-      max_temperature: 34 # 92°F
+      min_temperature: 55°F
+      max_temperature: 92°F
       temperature_step: 1
-    default_target_temperature_low: 19 # 68°F # must be 4° apart to keep animation simple
-    default_target_temperature_high: 23 # 72°F
+    default_target_temperature_low: 68°F # must be 4° apart to keep gui simple
+    default_target_temperature_high: 72°F
     cool_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_on:  triac_Y1 # compressor
@@ -250,7 +268,8 @@ script:
   - id: toggle_mode
     then:
       - lambda: |-
-          switch(id(tstat).mode) {
+          auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
+          switch(mode) {
             case CLIMATE_MODE_OFF:
               id(soft_mode) = CLIMATE_MODE_AUTO;
               break;
@@ -269,13 +288,16 @@ script:
     mode: restart
     then:
       - delay: 2500ms
-      - lambda: id(tstat).mode = id(soft_mode);
+      - lambda: |-
+          id(tstat).mode = id(soft_mode);
+          id(tstat).refresh();
       - component.update: oled
 
   - id: toggle_fan_mode
     then:
       - lambda: |-
-          switch(id(tstat).fan_mode) {
+          auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(tstat).fan_mode : id(soft_fan_mode);
+          switch(fan_mode) {
             case CLIMATE_FAN_AUTO:
               id(soft_fan_mode) = CLIMATE_FAN_ON;
               break;
@@ -288,25 +310,29 @@ script:
     mode: restart
     then:
       - delay: 2500ms
-      - lambda: id(tstat).fan_mode = id(soft_fan_mode);
+      - lambda: |-
+          id(tstat).fan_mode = id(soft_fan_mode);
+          id(tstat).refresh();
       - component.update: oled
 
   - id: raise_set_temp
     then:
       - lambda: |-
           // TODO: rules?
-          auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 2;
-          id(soft_set_temp) = roundf(temp) + 1;
-          ESP_LOGD("tstat", "%.1f°", id(soft_set_temp));
+          auto temp = id(apply_set_temp_timeout).is_running() ? 
+            id(soft_set_temp) : (id(tstat).target_temperature_low + 1.11111111111);
+          id(soft_set_temp) = temp + 0.55555555556;
+          ESP_LOGD("tstat", "%.1f° to %.1f°", temp, id(soft_set_temp));
       - script.execute: apply_set_temp_timeout
 
   - id: lower_set_temp
     then:
       - lambda: |-
           // TODO: rules?
-          auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 2;
-          id(soft_set_temp) = roundf(temp) - 1;
-          ESP_LOGD("tstat", "%.1f°", id(soft_set_temp));
+          auto temp = id(apply_set_temp_timeout).is_running() ? 
+            id(soft_set_temp) : (id(tstat).target_temperature_low + 1.11111111111);
+          id(soft_set_temp) = temp - 0.55555555556;
+          ESP_LOGD("tstat", "%.1f° to %.1f°", temp, id(soft_set_temp));
       - script.execute: apply_set_temp_timeout
 
   - id: apply_set_temp_timeout
@@ -314,8 +340,13 @@ script:
     then:
       - delay: 2500ms
       - lambda: |-
-          ESP_LOGD("tstat", "updating target temps");
-          id(tstat).target_temperature_low = id(soft_set_temp) - 2;
-          id(tstat).target_temperature_high = id(soft_set_temp) + 2;
+          // round to exact F degrees
+          auto tempF = (id(soft_set_temp) * 1.8) + 32;
+          tempF = roundf(tempF);
+          id(soft_set_temp) = (tempF - 32) * 0.55555555556;
+          ESP_LOGD("tstat", "%.1f°C - %.1f°F", id(soft_set_temp), tempF);
+
+          id(tstat).target_temperature_low = id(soft_set_temp) - 1.11111111111;
+          id(tstat).target_temperature_high = id(soft_set_temp) + 1.11111111111;
           id(tstat).refresh();
       - component.update: oled
