@@ -122,9 +122,9 @@ sensor:
     update_interval: 30s
 
 font:
-  - file: "resources/Helvetica.ttf"
-    id: font_lg
-    size: 16
+  # - file: "resources/Helvetica.ttf"
+  #   id: font_lg
+  #   size: 16
   - file: "resources/PressStart2P.ttf"
     id: font12
     size: 16
@@ -251,7 +251,7 @@ display:
       // climate_mode_to_string(mode), climate_action_to_string(id(tstat).action)
       it.printf(it.get_width() / 2, 2, id(font6), TextAlign::TOP_CENTER, "%s", status_string);
 
-      it.printf((it.get_width() / 2) + 3, 15, id(font_lg), TextAlign::TOP_CENTER, "%.1f°", curTemp);
+      it.printf((it.get_width() / 2) + 3, 15, id(font12), TextAlign::TOP_CENTER, "%.1f°", curTemp);
 
       it.rectangle(48, 33, 32, 13, COLOR_ON);
       it.printf(it.get_width() / 2, 36, id(font6), TextAlign::TOP_CENTER, "%.0f", temp);
@@ -274,7 +274,7 @@ display:
       } else {
 
         // draw time
-        it.strftime(3, 54, id(font6), "%-I:%M", id(esptime).now());
+        it.strftime(3, 54, id(font6), "%H:%M", id(esptime).now());
 
         // draw humidity
         it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(bme280_humid).state);
