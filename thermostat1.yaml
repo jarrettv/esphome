@@ -17,8 +17,8 @@ wifi:
 api:
   password: !secret api_password
 
-ota:
-  password: !secret ota_password
+# ota:
+#   password: !secret ota_password
 
 status_led:
   pin:
@@ -122,9 +122,9 @@ sensor:
     update_interval: 30s
 
 font:
-  # - file: "resources/Helvetica.ttf"
-  #   id: font24
-  #   size: 24
+  - file: "resources/Helvetica.ttf"
+    id: font_lg
+    size: 16
   - file: "resources/PressStart2P.ttf"
     id: font12
     size: 16
@@ -136,6 +136,47 @@ color:
   - id: medium_gray
     white: 50%
 
+image:
+  - file: "resources/set_temp.png"
+    id: set_temp
+    resize: 128x7
+  - file: "resources/mode1.png"
+    id: mode_auto
+    resize: 128x13
+  - file: "resources/mode2.png"
+    id: mode_cool
+    resize: 128x13
+  - file: "resources/mode3.png"
+    id: mode_heat
+    resize: 128x13
+  - file: "resources/mode4.png"
+    id: mode_off
+    resize: 128x13
+  - file: "resources/bar1.png"
+    id: bar1
+    resize: 128x9
+  - file: "resources/bar2.png"
+    id: bar2
+    resize: 128x9
+  - file: "resources/bar3.png"
+    id: bar3
+    resize: 128x9
+  - file: "resources/bar4.png"
+    id: bar4
+    resize: 128x9
+  - file: "resources/bar5.png"
+    id: bar5
+    resize: 128x9
+  - file: "resources/bar6.png"
+    id: bar6
+    resize: 128x9
+  - file: "resources/bar7.png"
+    id: bar7
+    resize: 128x9
+  - file: "resources/bar8.png"
+    id: bar8
+    resize: 128x9
+
 display:
   - platform: ssd1325_spi
     id: oled
@@ -143,33 +184,100 @@ display:
     cs_pin: GPIO15
     dc_pin: GPIO16
     reset_pin: GPIO17
-    update_interval: 200ms
+    update_interval: 1s
     lambda: |-
       auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
       auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(soft_fan_mode) : id(tstat).fan_mode;
       auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 1.11111111111;
+
+      // do calcs as F degrees
       temp = (temp * 1.8) + 32;
+      auto low = temp - 2;
+      auto high = temp + 2;
 
-      it.printf(it.get_width() / 2, 0, id(font6), TextAlign::TOP_CENTER, "%s - %s", climate_mode_to_string(mode), climate_action_to_string(id(tstat).action));
+      auto curTemp = (id(bme280_temp).state * 1.8) + 32;
 
-      it.printf((it.get_width() / 2) + 3, 14, id(font12), TextAlign::TOP_CENTER, "%.1f°", (id(bme280_temp).state * 1.8) + 32);
+      const size_t status_string_size = 30;
+      char  status_string[status_string_size];
 
-      it.printf(it.get_width() / 2, 54, id(font6), TextAlign::TOP_CENTER, "%.1f", temp);
+      if (id(apply_mode_timeout).is_running()) {
+
+        auto modeImage = mode == CLIMATE_MODE_AUTO ? id(mode_auto) :
+          mode == CLIMATE_MODE_COOL ? id(mode_cool) :
+          mode == CLIMATE_MODE_HEAT ? id(mode_heat) :
+          id(mode_off);
+
+        it.image(0, 0, modeImage, COLOR_OFF, COLOR_ON);
+
+      } else {
+        switch (id(tstat).action) {
+          case CLIMATE_ACTION_OFF:
+          case CLIMATE_ACTION_IDLE:
+            switch (mode) {
+              case CLIMATE_MODE_OFF:
+                snprintf(status_string, status_string_size, "Off");
+                break;
+
+              case CLIMATE_MODE_AUTO:
+                snprintf(status_string, status_string_size, "Auto");
+                break;
+
+              case CLIMATE_MODE_COOL:
+                snprintf(status_string, status_string_size, "Cool");
+                break;
+
+              case CLIMATE_MODE_HEAT:
+                snprintf(status_string, status_string_size, "Heat");
+                break;
+
+              default:
+                snprintf(status_string, status_string_size, "Unexpected mode");
+
+            }
+            break;
+
+          case CLIMATE_ACTION_COOLING:
+            snprintf(status_string, status_string_size, "Cooling");
+            break;
+
+          case CLIMATE_ACTION_HEATING:
+            snprintf(status_string, status_string_size, "Heating");
+            break;
+          
+          default:
+            snprintf(status_string, status_string_size, "Unexpected action");
+        }
+      }
+      // climate_mode_to_string(mode), climate_action_to_string(id(tstat).action)
+      it.printf(it.get_width() / 2, 2, id(font6), TextAlign::TOP_CENTER, "%s", status_string);
+
+      it.printf((it.get_width() / 2) + 3, 15, id(font_lg), TextAlign::TOP_CENTER, "%.1f°", curTemp);
+
+      it.rectangle(48, 33, 32, 13, COLOR_ON);
+      it.printf(it.get_width() / 2, 36, id(font6), TextAlign::TOP_CENTER, "%.0f", temp);
+
       if (id(apply_set_temp_timeout).is_running()) {
-        // TODO: draw cool image
+
+        it.image(0, 47, id(set_temp), COLOR_OFF, COLOR_ON);
+
+        // draw cool bar
+        static Image* bars[]={id(bar1),id(bar2),id(bar3),id(bar4),id(bar5),id(bar6),id(bar7),id(bar8)};
+        int encoderVal = (int)id(encoder).state;
+        int barIndex = encoderVal >= 0 ? encoderVal % 8 : (8 - abs(encoderVal % 8)) % 8;
+        it.image(0, 55, bars[barIndex], COLOR_OFF, COLOR_ON);
 
         // draw low temp
-        it.printf(3, 54, id(font6), "%.1f", temp - 2);
+        it.printf(0, 56, id(font6), "%.0f", temp - 2);
 
         // draw high temp
-        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.1f", temp + 2);
+        it.printf(it.get_width()+1, 56, id(font6), TextAlign::TOP_RIGHT, "%.0f", temp + 2);
       } else {
 
         // draw time
-        it.strftime(3, 54, id(font6), "%H:%M", id(esptime).now());
+        it.strftime(3, 54, id(font6), "%-I:%M", id(esptime).now());
 
         // draw humidity
-        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.1f%%", id(bme280_humid).state);
+        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(bme280_humid).state);
       }
 
 
