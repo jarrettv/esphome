@@ -108,18 +108,18 @@ sensor:
             const float brightness = id(phototransistor).state / 3.9;
             id(oled)->set_brightness(brightness);
             
-  - platform: bme280
-    address: 0x76
-    temperature:
-      id: bme280_temp
-      name: ${node_friendly_name} BME280 Temperature
-    humidity:
-      id: bme280_humid
-      name: ${node_friendly_name} BME280 Humidity
-    pressure:
-      id: bme280_press
-      name: ${node_friendly_name} BME280 Pressure
-    update_interval: 30s
+  # - platform: bme280
+  #   address: 0x76
+  #   temperature:
+  #     id: bme280_temp
+  #     name: ${node_friendly_name} BME280 Temperature
+  #   humidity:
+  #     id: bme280_humid
+  #     name: ${node_friendly_name} BME280 Humidity
+  #   pressure:
+  #     id: bme280_press
+  #     name: ${node_friendly_name} BME280 Pressure
+  #   update_interval: 30s
     
   - platform: shtcx
     temperature:
@@ -214,7 +214,7 @@ display:
       auto low = temp - 2;
       auto high = temp + 2;
 
-      auto curTemp = (id(bme280_temp).state * 1.8) + 32;
+      auto curTemp = (id(shtcx_temp).state * 1.8) + 32;
 
       const size_t status_string_size = 30;
       char  status_string[status_string_size];
@@ -294,13 +294,13 @@ display:
 
         if (id(esp_api).is_connected()) {
           // draw time
-          it.strftime(3, 54, id(font6), "online   %H:%M", id(esp_time).now());
+          it.strftime(3, 54, id(font6), "online %H:%M", id(esp_time).now());
         } else {
           it.print(3, 54, id(font6), "offline...");
         }
 
         // draw humidity
-        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(bme280_humid).state);
+        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(shtcx_humid).state);
       }
 
 
@@ -358,7 +358,7 @@ climate:
   - platform: thermostat
     id: tstat
     name: ${node_friendly_name}
-    sensor: bme280_temp
+    sensor: shtcx_temp
     hysteresis: 0.555555555555556
     visual:
       min_temperature: 55°F
