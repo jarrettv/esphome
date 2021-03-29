@@ -200,7 +200,7 @@ display:
 
       if (id(startup_delay).is_running()) {
         it.image(0, 20, id(splash), COLOR_OFF, COLOR_ON);
-        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.1");
+        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.2");
         return;
       }
 
