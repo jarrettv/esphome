@@ -16,8 +16,8 @@ wifi:
 api:
   password: !secret api_password
 
-# ota:
-#   password: !secret ota_password
+ota:
+  password: !secret ota_password
 
 status_led:
   pin:
@@ -200,7 +200,7 @@ display:
 
       if (id(startup_delay).is_running()) {
         it.image(0, 20, id(splash), COLOR_OFF, COLOR_ON);
-        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.0");
+        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.1");
         return;
       }
 
@@ -399,11 +399,12 @@ script:
     mode: restart
     then:
       - lambda: 'id(oled)->turn_on();'
-      - delay: 60s
+      - delay: 30s
       - lambda: 'id(oled)->turn_off();'
 
   - id: toggle_mode
     then:
+      - script.execute: display_on
       - lambda: |-
           auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
           switch(mode) {
@@ -432,6 +433,7 @@ script:
 
   - id: toggle_fan_mode
     then:
+      - script.execute: display_on
       - lambda: |-
           auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(tstat).fan_mode : id(soft_fan_mode);
           switch(fan_mode) {
@@ -454,6 +456,7 @@ script:
 
   - id: raise_set_temp
     then:
+      - script.execute: display_on
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
@@ -464,6 +467,7 @@ script:
 
   - id: lower_set_temp
     then:
+      - script.execute: display_on
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
