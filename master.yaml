@@ -21,7 +21,7 @@ i2c:
   scan: False
 
 sensor:
-  - platform: bme280
+  - platform: bmp280
     temperature:
       id: master_temp
       name: "Master Temp"
@@ -29,8 +29,8 @@ sensor:
     pressure:
       id: master_press
       name: "Master Pressure"
-    humidity:
-      id: "master_humid"
-      name: "Master Humidity"
+#    humidity:
+#      id: "master_humid"
+#      name: "Master Humidity"
     address: 0x76
     update_interval: 60s

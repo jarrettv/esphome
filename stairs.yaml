@@ -15,8 +15,17 @@ wifi:
                                
 logger:
   level: INFO
-
 api:
+  services:
+    - service: steps_fade
+      then:
+        - script.execute: fade
+    - service: steps_brighten
+      then:
+        - script.execute: brighten
+    - service: steps_darken
+      then:
+        - script.execute: darken
   
 ota:
 
@@ -72,63 +81,63 @@ output:
 
 light:
   - platform: monochromatic
-    id: s0
-    name: ${display_name} 1 (bottom)
+    id: step0
+    name: ${display_name} 01 (bottom)
     output: ${device_name}_step0
   - platform: monochromatic
-    id: s1
-    name: ${display_name} 2
+    id: step1
+    name: ${display_name} 02
     output: ${device_name}_step1
   - platform: monochromatic
-    id: s2
-    name: ${display_name} 3
+    id: step2
+    name: ${display_name} 03
     output: ${device_name}_step2
   - platform: monochromatic
-    id: s3
-    name: ${display_name} 4
+    id: step3
+    name: ${display_name} 04
     output: ${device_name}_step3
   - platform: monochromatic
-    id: s4
-    name: ${display_name} 5
+    id: step4
+    name: ${display_name} 05
     output: ${device_name}_step4
   - platform: monochromatic
-    id: s5
-    name: ${display_name} 6
+    id: step5
+    name: ${display_name} 06
     output: ${device_name}_step5
   - platform: monochromatic
-    id: s6
-    name: ${display_name} 7
+    id: step6
+    name: ${display_name} 07
     output: ${device_name}_step6
   - platform: monochromatic
-    id: s7
-    name: ${display_name} 8
+    id: step7
+    name: ${display_name} 08
     output: ${device_name}_step7
   - platform: monochromatic
-    id: s8
-    name: ${display_name} 9
+    id: step8
+    name: ${display_name} 09
     output: ${device_name}_step8
   - platform: monochromatic
-    id: s9
+    id: step9
     name: ${display_name} 10
     output: ${device_name}_step9
   - platform: monochromatic
-    id: s10
+    id: step10
     name: ${display_name} 11
     output: ${device_name}_step10
   - platform: monochromatic
-    id: s11
+    id: step11
     name: ${display_name} 12
     output: ${device_name}_step11
   - platform: monochromatic
-    id: s12
+    id: step12
     name: ${display_name} 13
     output: ${device_name}_step12
   - platform: monochromatic
-    id: s13
+    id: step13
     name: ${display_name} 14
     output: ${device_name}_step13
   - platform: monochromatic
-    id: s14
+    id: step14
     name: ${display_name} 15 (top)
     output: ${device_name}_step14
 
@@ -142,51 +151,7 @@ binary_sensor:
     device_class: light
     on_click:
       then:
-        - light.dim_relative:
-            id: s0
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s1
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s2
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s3
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s4
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s5
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s6
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s7
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s8
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s9
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s10
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s11
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s12
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s13
-            relative_brightness: -5%
-        - light.dim_relative:
-            id: s14
-            relative_brightness: -5%
+        - script.execute: darken
   - platform: gpio
     pin:
       number: GPIO35
@@ -196,51 +161,7 @@ binary_sensor:
     device_class: light
     on_click:
       then:
-        - light.dim_relative:
-            id: s0
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s1
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s2
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s3
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s4
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s5
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s6
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s7
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s8
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s9
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s10
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s11
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s12
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s13
-            relative_brightness: 5%
-        - light.dim_relative:
-            id: s14
-            relative_brightness: 5%
+        - script.execute: brighten
   - platform: gpio
     pin:
       number: GPIO32
@@ -250,10 +171,109 @@ binary_sensor:
     device_class: light
     on_click:
       then:
-        - lambda: |-
-              static LightState* lights[]={id(s0),id(s1),id(s2),id(s3),id(s4),id(s5),id(s6),id(s7),id(s8),id(s9),id(s10),id(s11),id(s12),id(s13),id(s14)};
-              for (int i {0}; i <= 14; i++) {
-                auto call = lights[i]->toggle();
-                call.set_transition_length(1000 + (100 * i));
-                call.perform();
-              }
+        - script.execute: fade
+
+script:
+  - id: fade
+    then:
+      - lambda: |-
+            static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+            for (int i {0}; i <= 14; i++) {
+              auto call = lights[i]->toggle();
+              call.set_transition_length(1000 + (100 * i));
+              call.perform();
+            }
+  - id: darken
+    then:
+      - light.dim_relative:
+          id: step0
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step1
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step2
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step3
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step4
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step5
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step6
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step7
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step8
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step9
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step10
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step11
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step12
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step13
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step14
+          relative_brightness: -5%
+  - id: brighten
+    then:
+      - light.dim_relative:
+          id: step0
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step1
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step2
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step3
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step4
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step5
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step6
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step7
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step8
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step9
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step10
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step11
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step12
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step13
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step14
+          relative_brightness: 5%
