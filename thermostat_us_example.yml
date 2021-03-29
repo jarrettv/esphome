@@ -1,0 +1,19 @@
+climate:
+  - platform: thermostat_us
+    id: esp_thermostat
+    name: ${node_friendly_name}
+    sensor: bme280_temp
+    mode_input: rotary_button
+    fan_mode_input: side_button
+    raise_lower_input: rotary_encoder
+    default_target_low: 67°F
+    default_target_high: 72°F
+    emergency_heat_mode: eco
+    wires:
+      - fan: triac_green_wire
+      - compressor: triac_yellow_wire
+      - reversing_valve: triac_orange_wire
+      - emergency_heat: triac_white_wire
+    on_change:
+      then:
+        - component.update: oled

@@ -1,0 +1,9 @@
+# sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome:dev thermostat1.yaml run
+
+substitutions:
+  node_name: "thermostat1"
+  node_friendly_name: "Downstairs Thermostat"
+  oled_dc_pin: GPIO16
+  oled_reset_pin: GPIO17
+
+<<: !include thermostat.common.yaml
