@@ -1,5 +1,7 @@
 # sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome:dev thermostat2.yaml run
 
+# this thermostat using wroom module
+
 substitutions:
   node_name: "thermostat2"
   node_friendly_name: "Upstairs Thermostat"

@@ -14,6 +14,7 @@ wifi:
   password: !secret wifi_password
 
 api:
+  id: esp_api
   password: !secret api_password
 
 ota:
@@ -26,7 +27,7 @@ status_led:
 
 time:
   - platform: homeassistant
-    id: esptime
+    id: esp_time
     timezone: America/Chicago
 
 i2c:
@@ -291,8 +292,12 @@ display:
         it.printf(it.get_width()+1, 56, id(font6), TextAlign::TOP_RIGHT, "%.0f", temp + 2);
       } else {
 
-        // draw time
-        it.strftime(3, 54, id(font6), "%H:%M", id(esptime).now());
+        if (id(esp_api).is_connected()) {
+          // draw time
+          it.strftime(3, 54, id(font6), "online   %H:%M", id(esp_time).now());
+        } else {
+          it.print(3, 54, id(font6), "offline...");
+        }
 
         // draw humidity
         it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(bme280_humid).state);
