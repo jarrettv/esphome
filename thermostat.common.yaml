@@ -108,23 +108,25 @@ sensor:
             const float brightness = id(phototransistor).state / 3.9;
             id(oled)->set_brightness(brightness);
             
-  # - platform: bme280
-  #   address: 0x76
-  #   temperature:
-  #     id: bme280_temp
-  #     name: ${node_friendly_name} BME280 Temperature
-  #   humidity:
-  #     id: bme280_humid
-  #     name: ${node_friendly_name} BME280 Humidity
-  #   pressure:
-  #     id: bme280_press
-  #     name: ${node_friendly_name} BME280 Pressure
-  #   update_interval: 30s
+  - platform: bme280
+    address: 0x76
+    temperature:
+      id: bme280_temp
+      name: ${node_friendly_name} BME280 Temperature
+    humidity:
+      id: bme280_humid
+      name: ${node_friendly_name} BME280 Humidity
+    pressure:
+      id: bme280_press
+      name: ${node_friendly_name} BME280 Pressure
+    update_interval: 30s
     
   - platform: shtcx
     temperature:
       id: shtcx_temp
       name: ${node_friendly_name} SHTC3 Temperature
+      filters:
+      - offset: -1.6
     humidity:
       id: shtcx_humid
       name: ${node_friendly_name} SHTC3 Humidity
@@ -149,6 +151,12 @@ image:
   - file: "resources/splash.png"
     id: splash
     resize: 128x21
+  - file: "resources/hass_online.png"
+    id: hass_online
+    resize: 16x14
+  - file: "resources/hass_offline.png"
+    id: hass_offline
+    resize: 16x14
   - file: "resources/set_temp.png"
     id: set_temp
     resize: 128x7
@@ -293,14 +301,17 @@ display:
       } else {
 
         if (id(esp_api).is_connected()) {
+
+          it.image(3, 50, id(hass_online), COLOR_OFF, COLOR_ON);
+
           // draw time
-          it.strftime(3, 54, id(font6), "online %H:%M", id(esp_time).now());
+          it.strftime(it.get_width() / 2, 54, id(font6), TextAlign::TOP_CENTER, "%H:%M", id(esp_time).now());
         } else {
-          it.print(3, 54, id(font6), "offline...");
+          it.image(3, 50, id(hass_offline), COLOR_OFF, COLOR_ON);
         }
 
         // draw humidity
-        it.printf(it.get_width() - 3, 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(shtcx_humid).state);
+        it.printf(it.get_width(), 54, id(font6), TextAlign::TOP_RIGHT, "%.0f%%", id(shtcx_humid).state);
       }
 
 
