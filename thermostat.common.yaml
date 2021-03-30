@@ -207,7 +207,9 @@ display:
     update_interval: 1s
     lambda: |-
 
+      // draw boot screen
       if (id(startup_delay).is_running()) {
+        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.2");
         it.image(0, 20, id(splash), COLOR_OFF, COLOR_ON);
         it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.2");
         return;
@@ -347,14 +349,7 @@ switch:
       number: 1
       mode: OUTPUT
 
-    # Reversing valve O/C orange wire, on for cooling
-  - platform: gpio
-    id: triac_Y2
-    internal: true
-    pin:
-      mcp23xxx: mcp23017_hub
-      number: 2
-      mode: OUTPUT
+    #triac_Y2 pin number 2 not working on wroom board
 
     # Aux heat W1 white wire
   - platform: gpio
@@ -363,6 +358,15 @@ switch:
     pin:
       mcp23xxx: mcp23017_hub
       number: 3
+      mode: OUTPUT
+
+    # Reversing valve O/C orange wire, on for cooling
+  - platform: gpio
+    id: triac_W2
+    internal: true
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 4
       mode: OUTPUT
 
 climate:
@@ -380,22 +384,22 @@ climate:
     cool_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_on:  triac_Y1 # compressor
-      - switch.turn_on:  triac_Y2 # rev valve
+      - switch.turn_on:  triac_W2 # rev valve
       - switch.turn_off: triac_W1 # em heat
     heat_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_on:  triac_Y1 # compressor
-      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W2 # rev valve
       - switch.turn_off: triac_W1 # em heat
     idle_action:
       - switch.turn_off: triac_G  # fan
       - switch.turn_off: triac_Y1 # compressor
-      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W2 # rev valve
       - switch.turn_off: triac_W1 # em heat
     fan_only_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_off: triac_Y1 # compressor
-      - switch.turn_off: triac_Y2 # rev valve
+      - switch.turn_off: triac_W2 # rev valve
       - switch.turn_off: triac_W1 # em heat
 
 globals:
