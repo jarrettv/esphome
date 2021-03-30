@@ -5,7 +5,7 @@
 substitutions:
   node_name: "thermostat2"
   node_friendly_name: "Upstairs Thermostat"
-  oled_dc_pin: GPIO26
-  oled_reset_pin: GPIO25
+  oled_dc_pin: GPIO16
+  oled_reset_pin: GPIO17
 
 <<: !include thermostat.common.yaml
