@@ -177,12 +177,48 @@ script:
   - id: fade
     then:
       - lambda: |-
-            static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-            for (int i {0}; i <= 14; i++) {
-              auto call = lights[i]->toggle();
-              call.set_transition_length(1000 + (100 * i));
-              call.perform();
-            }
+          static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+          for (int i {0}; i <= 14; i++) {
+            auto call = lights[i]->toggle();
+            call.set_transition_length(1000 + (150 * i));
+            call.perform();
+          }
+  - id: fade_on_bottom_up
+    then:
+      - lambda: |-
+          static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+          for (int i {0}; i <= 14; i++) {
+            auto call = lights[i]->turn_on();
+            call.set_transition_length(1000 + (150 * i));
+            call.perform();
+          }
+  - id: fade_on_top_down
+    then:
+      - lambda: |-
+          static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+          for (int i {14}; i >= 0; i++) {
+            auto call = lights[i]->turn_on();
+            call.set_transition_length(1000 + (150 * i));
+            call.perform();
+          }
+  - id: fade_off_bottom_up
+    then:
+      - lambda: |-
+          static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+          for (int i {0}; i <= 14; i++) {
+            auto call = lights[i]->turn_off();
+            call.set_transition_length(1000 + (150 * i));
+            call.perform();
+          }
+  - id: fade_off_top_down
+    then:
+      - lambda: |-
+          static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+          for (int i {14}; i >= 0; i++) {
+            auto call = lights[i]->turn_off();
+            call.set_transition_length(1000 + (150 * i));
+            call.perform();
+          }
   - id: darken
     then:
       - light.dim_relative:
