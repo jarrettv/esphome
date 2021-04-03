@@ -35,111 +35,111 @@ web_server:
 output:
   - platform: ledc
     pin: GPIO4
-    id: ${device_name}_step0
+    id: ledc0
   - platform: ledc
     pin: GPIO5
-    id: ${device_name}_step1
+    id: ledc1
   - platform: ledc
     pin: GPIO12
-    id: ${device_name}_step2
+    id: ledc2
   - platform: ledc
     pin: GPIO13
-    id: ${device_name}_step3
+    id: ledc3
   - platform: ledc
     pin: GPIO14
-    id: ${device_name}_step4
+    id: ledc4
   - platform: ledc
     pin: GPIO15
-    id: ${device_name}_step5
+    id: ledc5
   - platform: ledc
     pin: GPIO16
-    id: ${device_name}_step6
+    id: ledc6
   - platform: ledc
     pin: GPIO17
-    id: ${device_name}_step7
+    id: ledc7
   - platform: ledc
     pin: GPIO18
-    id: ${device_name}_step8
+    id: ledc8
   - platform: ledc
     pin: GPIO19
-    id: ${device_name}_step9
+    id: ledc9
   - platform: ledc
     pin: GPIO21
-    id: ${device_name}_step10
+    id: ledc10
   - platform: ledc
     pin: GPIO22
-    id: ${device_name}_step11
+    id: ledc11
   - platform: ledc
     pin: GPIO23
-    id: ${device_name}_step12
+    id: ledc12
   - platform: ledc
     pin: GPIO25
-    id: ${device_name}_step13
+    id: ledc13
   - platform: ledc
     pin: GPIO26
-    id: ${device_name}_step14
+    id: ledc14
 
 light:
   - platform: monochromatic
     id: step0
     name: ${display_name} 01 (bottom)
-    output: ${device_name}_step0
+    output: ledc0
   - platform: monochromatic
     id: step1
     name: ${display_name} 02
-    output: ${device_name}_step1
+    output: ledc1
   - platform: monochromatic
     id: step2
     name: ${display_name} 03
-    output: ${device_name}_step2
+    output: ledc2
   - platform: monochromatic
     id: step3
     name: ${display_name} 04
-    output: ${device_name}_step3
+    output: ledc3
   - platform: monochromatic
     id: step4
     name: ${display_name} 05
-    output: ${device_name}_step4
+    output: ledc4
   - platform: monochromatic
     id: step5
     name: ${display_name} 06
-    output: ${device_name}_step5
+    output: ledc5
   - platform: monochromatic
     id: step6
     name: ${display_name} 07
-    output: ${device_name}_step6
+    output: ledc6
   - platform: monochromatic
     id: step7
     name: ${display_name} 08
-    output: ${device_name}_step7
+    output: ledc7
   - platform: monochromatic
     id: step8
     name: ${display_name} 09
-    output: ${device_name}_step8
+    output: ledc8
   - platform: monochromatic
     id: step9
     name: ${display_name} 10
-    output: ${device_name}_step9
+    output: ledc9
   - platform: monochromatic
     id: step10
     name: ${display_name} 11
-    output: ${device_name}_step10
+    output: ledc10
   - platform: monochromatic
     id: step11
     name: ${display_name} 12
-    output: ${device_name}_step11
+    output: ledc11
   - platform: monochromatic
     id: step12
     name: ${display_name} 13
-    output: ${device_name}_step12
+    output: ledc12
   - platform: monochromatic
     id: step13
     name: ${display_name} 14
-    output: ${device_name}_step13
+    output: ledc13
   - platform: monochromatic
     id: step14
     name: ${display_name} 15 (top)
-    output: ${device_name}_step14
+    output: ledc14
 
 binary_sensor:
   - platform: gpio
@@ -147,7 +147,7 @@ binary_sensor:
       number: GPIO34
       mode: INPUT_PULLUP
       inverted: yes
-    id: ${device_name}_button_down
+    id: button_down
     device_class: light
     on_click:
       then:
@@ -157,7 +157,7 @@ binary_sensor:
       number: GPIO35
       mode: INPUT_PULLUP
       inverted: yes
-    id: ${device_name}_button_up
+    id: button_up
     device_class: light
     on_click:
       then:
@@ -167,7 +167,7 @@ binary_sensor:
       number: GPIO32
       mode: INPUT_PULLUP
       inverted: yes
-    id: ${device_name}_button_toggle
+    id: button_toggle
     device_class: light
     on_click:
       then:
