@@ -1,0 +1,124 @@
+substitutions:
+  display_name: Downstairs Monitor
+
+esphome:
+  name: homemonitor
+  platform: ESP32
+  board: featheresp32
+  includes:
+    - hpma115c0.h
+
+#!include: shared/esp__common_secrets.yaml
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  id: esp_api
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
+
+# captive_portal:
+
+# Enable logging
+logger:
+
+i2c:
+  id: i2c_bus
+  frequency: 400kHz
+  sda: 23
+  scl: 22
+  scan: True
+
+#gpio21 zmod_reset
+#gpio 19 zmod_int0
+#gpio 18 zmod_int1
+#gpio5 dustpwr
+#gpio17 neopixel
+#gpio16 dusttx
+#gpio4 dustrx
+
+# switch:
+#   - platform: gpio
+#     name: "Honeywell HPMA115C0 Power"
+#     pin: 5
+
+#   - platform: gpio
+#     name: "Renesas ZMOD INT0"
+#     pin:
+#       number: 19
+#       inverted: True #?
+#       mode: INPUT_PULLUP #?
+
+#   - platform: gpio
+#     name: "Renesas ZMOD INT1"
+#     pin:
+#       number: 18
+#       inverted: True #?
+#       mode: INPUT_PULLUP #?
+
+sensor:
+  - platform: bme680
+    temperature:
+      name: "BME680 Temperature"
+      oversampling: 16x
+    pressure:
+      name: "BME680 Pressure"
+    humidity:
+      name: "BME680 Humidity"
+    gas_resistance:
+      name: "BME680 Gas Resistance"
+    address: 0x77
+    update_interval: 60s
+
+  - platform: custom
+    lambda: |-
+      auto hpm = new Hpma115C0Sensor(5000, id(uart_bus));
+      App.register_component(hpm);
+      return {hpm};
+    sensors:
+      name: "Particulate Matter <1µm Concentration"
+      unit_of_measurement: "PM1"
+      accuracy_decimals: 2
+      icon: "mdi:vanish"
+
+#   - platform: sgp40
+#     temperature:
+#       name: "sgp40 Temperature"
+#       #oversampling: 16x
+#     #pressure:
+#     #  name: "sgp40 Pressure"
+#     humidity:
+#       name: "sgp40 Humidity"
+#     gas_resistance:
+#       name: "sgp40 Gas Resistance"
+#     address: 0x59
+#     update_interval: 60s
+
+
+#   - platform: hpma115c0
+#     pm_1:
+#       name: "Particulate Matter <1µm Concentration"
+#     pm_2_5:
+#       name: "Particulate Matter <2.5µm Concentration"
+#     pm_4:
+#       name: "Particulate Matter <4µm Concentration"
+#     pm_10_0:
+#       name: "Particulate Matter <10.0µm Concentration"
+#     update_interval: 5min
+
+# light:
+#   - platform: neopixelbus
+#     type: GRB
+#     pin: GPIO17
+#     num_leds: 1
+#     name: "NeoPixel Light"
+
+uart:
+  id: uart_bus
+  rx_pin: GPIO4
+  tx_pin: GPIO16
+  baud_rate: 9600
