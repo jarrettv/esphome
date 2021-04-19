@@ -8,8 +8,6 @@ esphome:
   includes:
     - hpma115c0.h
 
-#!include: shared/esp__common_secrets.yaml
-
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -63,52 +61,53 @@ i2c:
 sensor:
   - platform: bme680
     temperature:
-      name: "BME680 Temperature"
+      name: ${display_name} BME680 Temperature
       oversampling: 16x
     pressure:
-      name: "BME680 Pressure"
+      name: ${display_name} BME680 Pressure
     humidity:
-      name: "BME680 Humidity"
+      name: ${display_name} BME680 Humidity
     gas_resistance:
-      name: "BME680 Gas Resistance"
+      name: ${display_name} BME680 Gas Resistance
     address: 0x77
     update_interval: 60s
 
   - platform: custom
     lambda: |-
-      auto hpm = new Hpma115C0Sensor(5000, id(uart_bus));
+      auto hpm = new Hpma115C0Component(10000, id(uart_bus));
       App.register_component(hpm);
-      return {hpm};
+      return {hpm->pm_1_sensor, hpm->pm_2_5_sensor, hpm->pm_4_sensor, hpm->pm_10_sensor};
     sensors:
-      name: "Particulate Matter <1µm Concentration"
-      unit_of_measurement: "PM1"
-      accuracy_decimals: 2
-      icon: "mdi:vanish"
+      - name: ${display_name} Particulate Matter <1µm Concentration
+        unit_of_measurement: "PM"
+        accuracy_decimals: 2
+        icon: "mdi:vanish"
+      - name: ${display_name} Particulate Matter <2.5µm Concentration
+        unit_of_measurement: "PM"
+        accuracy_decimals: 2
+        icon: "mdi:vanish"
+      - name: ${display_name} Particulate Matter <4µm Concentration
+        unit_of_measurement: "PM"
+        accuracy_decimals: 2
+        icon: "mdi:vanish"
+      - name: ${display_name} Particulate Matter <10µm Concentration
+        unit_of_measurement: "PM"
+        accuracy_decimals: 2
+        icon: "mdi:vanish"
 
-#   - platform: sgp40
-#     temperature:
-#       name: "sgp40 Temperature"
-#       #oversampling: 16x
-#     #pressure:
-#     #  name: "sgp40 Pressure"
-#     humidity:
-#       name: "sgp40 Humidity"
-#     gas_resistance:
-#       name: "sgp40 Gas Resistance"
-#     address: 0x59
-#     update_interval: 60s
+  # - platform: sgp40
+  #   # voc_index:
+  #   #   name: "SGP40 VOC Index"
+  #   # temperature:
+  #   #   name: "SGP40 Temperature"
+  #   # humidity:
+  #   #   name: "SGP40 Humidity"
+  #   # gas_resistance:
+  #   #   name: "SGP40 Gas Resistance"
+  #   address: 0x59
+  #   update_interval: 60s
 
-
-#   - platform: hpma115c0
-#     pm_1:
-#       name: "Particulate Matter <1µm Concentration"
-#     pm_2_5:
-#       name: "Particulate Matter <2.5µm Concentration"
-#     pm_4:
-#       name: "Particulate Matter <4µm Concentration"
-#     pm_10_0:
-#       name: "Particulate Matter <10.0µm Concentration"
-#     update_interval: 5min
+#renesas 4410
 
 # light:
 #   - platform: neopixelbus
