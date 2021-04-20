@@ -1,3 +1,12 @@
+
+#gpio21 zmod_reset
+#gpio 19 zmod_int0
+#gpio 18 zmod_int1
+#gpio5 dustpwr
+#gpio17 neopixel
+#gpio16 dusttx
+#gpio4 dustrx
+
 substitutions:
   display_name: 1stFloor
 
@@ -21,7 +30,9 @@ ota:
 
 # captive_portal:
 
-# Enable logging
+web_server:
+  port: 80
+
 logger:
 
 i2c:
@@ -31,13 +42,11 @@ i2c:
   scl: 22
   scan: True
 
-#gpio21 zmod_reset
-#gpio 19 zmod_int0
-#gpio 18 zmod_int1
-#gpio5 dustpwr
-#gpio17 neopixel
-#gpio16 dusttx
-#gpio4 dustrx
+uart:
+  id: uart_bus
+  rx_pin: GPIO4
+  tx_pin: GPIO16
+  baud_rate: 9600
 
 # switch:
 #   - platform: gpio
@@ -57,58 +66,12 @@ i2c:
 #       number: 18
 #       inverted: True #?
 #       mode: INPUT_PULLUP #?
+
 bme680_bsec:
-    # i2c address
-    # -----------
-    # Common values are:
-    # - 0x76
-    # - 0x77
-    # Default: 0x76
     address: 0x77
-
-    # Temperature offset
-    # ------------------
-    # Useful if device is in enclosure and reads too high
-    # Default: 0
-    temperature_offset: 0
-
-    # IAQ calculation mode
-    # --------------------
-    # Available options:
-    # - static (for fixed position devices)
-    # - mobile (for on person or other moveable devices)
-    # Default: static
-    iaq_mode: static
-
-    # Sample rate
-    # -----------
-    # Available options:
-    # - lp (low power - samples every 3 seconds)
-    # - ulp (ultra low power - samples every 5 minutes)
-    # Default: lp
-    sample_rate: lp
-
-    # Interval at which to save BSEC state
-    # ------------------------------------
-    # Default: 6h
-    state_save_interval: 6h
+    temperature_offset: -4.8
 
 sensor:
-  # - platform: bme680
-  #   temperature:
-  #     id: bme680_temp
-  #     name: ${display_name} Temperature
-  #     oversampling: 16x
-  #   pressure:
-  #     name: ${display_name} Pressure
-  #   humidity:
-  #     id: bme680_humid
-  #     name: ${display_name} Humidity
-  #   gas_resistance:
-  #     name: ${display_name} Gas Resistance
-  #   address: 0x77
-  #   update_interval: 20s
-
   - platform: custom
     lambda: |-
       auto hpm = new Hpma115C0Component(20000, id(uart_bus));
@@ -139,52 +102,42 @@ sensor:
   - platform: bme680_bsec
     temperature:
       id: bme680_temp
-      # Temperature in °C
-      name: "BME680 Temperature"
+      name: ${display_name} Temperature
       filters:
         - median
     pressure:
-      # Pressure in hPa
-      name: "BME680 Pressure"
+      name: ${display_name} Pressure
       filters:
         - median
     humidity:
       id: bme680_humid
-      # Relative humidity %
-      name: "BME680 Humidity"
+      name: ${display_name} Humidity
       filters:
         - median
     gas_resistance:
-      # Gas resistance in Ω
-      name: "BME680 Gas Resistance"
+      name: ${display_name} Gas Resistance
       filters:
         - median
     iaq:
-      # Indoor air quality value
-      name: "BME680 IAQ"
+      name: ${display_name} IAQ
       filters:
         - median
-    iaq_accuracy:
-      # IAQ accuracy as a numeric value of 0, 1, 2, 3
-      name: "BME680 Numeric IAQ Accuracy"
-    co2_equivalent:
-      # CO2 equivalent estimate in ppm
-      name: "BME680 CO2 Equivalent"
+    iaq_accuracy: # numeric value of 0, 1, 2, 3      
+      name: ${display_name} Numeric IAQ Accuracy
+    co2_equivalent: # estimate in ppm      
+      name: ${display_name} CO2 Equivalent
       filters:
         - median
-    breath_voc_equivalent:
-      # Volatile organic compounds equivalent estimate in ppm
-      name: "BME680 Breath VOC Equivalent"
+    breath_voc_equivalent: # estimate in ppm      
+      name: ${display_name} Breath VOC Equivalent
       filters:
         - median
 
 text_sensor:
   - platform: bme680_bsec
-    iaq_accuracy:
-      # IAQ accuracy as a text value of Stabilizing, Uncertain, Calibrating, Calibrated
-      name: "BME680 IAQ Accuracy"    
-web_server:
-  port: 80
+    iaq_accuracy: # Stabilizing, Uncertain, Calibrating, Calibrated
+      name: ${display_name} IAQ Accuracy
+      
 #renesas 4410
 
 # light:
@@ -194,8 +147,3 @@ web_server:
 #     num_leds: 1
 #     name: "NeoPixel Light"
 
-uart:
-  id: uart_bus
-  rx_pin: GPIO4
-  tx_pin: GPIO16
-  baud_rate: 9600
