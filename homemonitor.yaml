@@ -81,16 +81,16 @@ sensor:
       return {hpm->pm_1_sensor, hpm->pm_2_5_sensor, hpm->pm_4_sensor, hpm->pm_10_sensor};
     sensors:
       - name: ${display_name} PM <1
-        unit_of_measurement: "μ g/m³"
+        unit_of_measurement: "μg/m³"
         icon: "mdi:vanish"
       - name: ${display_name} PM <2.5
-        unit_of_measurement: "μ g/m³"
+        unit_of_measurement: "μg/m³"
         icon: "mdi:vanish"
       - name: ${display_name} PM <4
-        unit_of_measurement: "μ g/m³"
+        unit_of_measurement: "μg/m³"
         icon: "mdi:vanish"
       - name: ${display_name} PM <10
-        unit_of_measurement: "μ g/m³"
+        unit_of_measurement: "μg/m³"
         icon: "mdi:vanish"
 
   - platform: sgp40

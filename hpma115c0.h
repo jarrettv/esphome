@@ -11,8 +11,7 @@ class Hpma115C0Component : public PollingComponent, public UARTDevice {
   Sensor *pm_4_sensor = new Sensor();
   Sensor *pm_10_sensor = new Sensor();
 
-  static const uint16_t STARTUP_DELAY_MS = 20000;
-
+  static const uint16_t STARTUP_DELAY_MS = 12000;
   bool delaying_startup = true;
   
   static const char MSG_CHAR_1 = 0x42;
