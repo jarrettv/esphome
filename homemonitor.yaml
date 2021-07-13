@@ -74,7 +74,7 @@ bme680_bsec:
 sensor:
   - platform: custom
     lambda: |-
-      auto hpm = new Hpma115C0Component(20000, id(uart_bus));
+      auto hpm = new Hpma115C0Component(60000, id(uart_bus));
       App.register_component(hpm);
       return {hpm->pm_1_sensor, hpm->pm_2_5_sensor, hpm->pm_4_sensor, hpm->pm_10_sensor};
     sensors:
@@ -97,7 +97,7 @@ sensor:
       temperature_source: bme680_temp
       humidity_source: bme680_humid
     store_baseline: True
-    update_interval: 5s
+    update_interval: 60s
 
   - platform: bme680_bsec
     temperature:
