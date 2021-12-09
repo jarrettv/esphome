@@ -1,0 +1,109 @@
+esphome:
+  name: vent-stale-office
+  platform: ESP8266
+  board: d1_mini_lite
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "b85f48fa2b744d7b0f80315793ea6cd6"
+  
+i2c:
+  scan: False
+
+globals:
+ - id: vent_open
+   type: bool
+   restore_value: true
+   initial_value: 'true'
+  
+sensor:
+  - platform: bmp085
+    temperature:
+      id: bmp180_temp
+      name: Office Vent Temp
+    pressure:
+      id: bmp180_press
+      name: Office Vent Pressure
+    address: 0x77
+    update_interval: 60s
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+      inverted: yes
+    id: open_button
+    on_click:
+      then:
+      - servo.write:
+          id: my_servo
+          level: -70.0%
+  - platform: gpio
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+      inverted: yes
+    id: close_button
+    on_click:
+      then:
+      - servo.write:
+          id: my_servo
+          level: 92.0%
+
+switch:
+  - platform: template
+    name: Office Vent Damper
+    lambda: |-
+      return id(vent_open);
+    turn_on_action:
+      - globals.set:
+          id: vent_open
+          value: 'true'
+      - servo.write:
+          id: my_servo
+          level: -70.0%
+    turn_off_action:
+      - globals.set:
+          id: vent_open
+          value: 'false'
+      - servo.write:
+          id: my_servo
+          level: 92.0%
+    
+light:
+  - platform: fastled_clockless
+    chipset: WS2812B
+    pin: D3
+    num_leds: 5
+    rgb_order: GRB
+    name: Office Vent Light
+    effects:
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 5s      # defaults to 1s
+          update_interval: 1s
+      - addressable_rainbow:
+          name: Rainbow Effect
+  
+servo:
+  - id: my_servo
+    output: pwm_output
+    min_level: 3%
+    idle_level: 7%
+    max_level: 11.5%
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_output
+    pin: D4
+    frequency: 50 Hz

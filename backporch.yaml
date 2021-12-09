@@ -2,7 +2,7 @@
 
 
 esphome:
-  name: backporch
+  name: printer_gold
   platform: ESP8266
   board: d1_mini_lite
 
@@ -24,15 +24,15 @@ i2c:
 sensor:
   - platform: bme280
     temperature:
-      id: backporch_temp
-      name: "Backporch Temp"
+      id: printer_gold_temp
+      name: "Goldenchild Chamber Temp"
       oversampling: 16x
     pressure:
-      id: backporch_press
-      name: "Backporch Pressure"
+      id: printer_gold_press
+      name: "Goldenchild Chamber Pressure"
     humidity:
-      id: "backporch_humid"
-      name: "Backporch Humidity"
+      id: printer_gold_humid
+      name: "Goldenchild Chamber Humidity"
     address: 0x76
     update_interval: 60s
 

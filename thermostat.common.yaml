@@ -16,7 +16,7 @@ wifi:
 api:
   id: esp_api
   password: !secret api_password
-
+ 
 ota:
   password: !secret ota_password
 
@@ -375,13 +375,20 @@ climate:
     id: tstat
     name: ${node_friendly_name}
     sensor: shtcx_temp
-    hysteresis: 0.555555555555556
+    # hysteresis: 0.2
     visual:
       min_temperature: 55°F
       max_temperature: 92°F
       temperature_step: 1
     default_target_temperature_low: 68°F # must be 4° apart to keep gui simple
-    default_target_temperature_high: 72°F
+    default_target_temperature_high: 70°F
+    min_cooling_off_time: 300s
+    min_cooling_run_time: 300s
+    min_heating_off_time: 300s
+    min_heating_run_time: 300s
+    min_fanning_run_time: 30s
+    min_fanning_off_time: 30s
+    min_idle_time: 30s
     cool_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_on:  triac_Y1 # compressor
@@ -395,12 +402,12 @@ climate:
     idle_action:
       - switch.turn_off: triac_G  # fan
       - switch.turn_off: triac_Y1 # compressor
-      - switch.turn_off: triac_Y2 # rev valve
+#      - switch.turn_off: triac_Y2 # rev valve
       - switch.turn_off: triac_W1 # em heat
     fan_only_action:
       - switch.turn_on:  triac_G  # fan
       - switch.turn_off: triac_Y1 # compressor
-      - switch.turn_off: triac_Y2 # rev valve
+#      - switch.turn_off: triac_Y2 # rev valve
       - switch.turn_off: triac_W1 # em heat
 
 globals:
@@ -481,7 +488,7 @@ script:
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
-            id(soft_set_temp) : (id(tstat).target_temperature_low + 1.11111111111);
+            id(soft_set_temp) : (id(tstat).target_temperature_low + 0.55555555556);
           id(soft_set_temp) = temp + 0.55555555556;
           ESP_LOGD("tstat", "%.1f° to %.1f°", temp, id(soft_set_temp));
       - script.execute: apply_set_temp_timeout
@@ -492,7 +499,7 @@ script:
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
-            id(soft_set_temp) : (id(tstat).target_temperature_low + 1.11111111111);
+            id(soft_set_temp) : (id(tstat).target_temperature_low + 0.55555555556);
           id(soft_set_temp) = temp - 0.55555555556;
           ESP_LOGD("tstat", "%.1f° to %.1f°", temp, id(soft_set_temp));
       - script.execute: apply_set_temp_timeout
@@ -508,7 +515,7 @@ script:
           id(soft_set_temp) = (tempF - 32) * 0.55555555556;
           ESP_LOGD("tstat", "%.1f°C - %.1f°F", id(soft_set_temp), tempF);
 
-          id(tstat).target_temperature_low = id(soft_set_temp) - 1.11111111111;
-          id(tstat).target_temperature_high = id(soft_set_temp) + 1.11111111111;
+          id(tstat).target_temperature_low = id(soft_set_temp) - 0.55555555556;
+          id(tstat).target_temperature_high = id(soft_set_temp) + 0.55555555556;
           id(tstat).refresh();
       - component.update: oled
