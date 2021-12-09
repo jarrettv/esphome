@@ -78,7 +78,7 @@ binary_sensor:
       then:
         - if:
             condition:
-              switch.is_on: pir_motion
+              #switch.is_on: pir_motion
               switch.is_on: allow_display_upon_motion
             then:
               - script.execute: display_on_awhile
