@@ -1,0 +1,56 @@
+#sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome guest_desk.yaml run
+
+substitutions:
+  display_name: Guestroom Desk
+
+esphome:
+  name: guest_desk
+  platform: ESP8266
+  board: d1_mini_lite
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+                               
+logger:
+  level: INFO
+  esp8266_store_log_strings_in_flash: False
+
+api:
+
+ota:
+
+i2c:
+  scan: False
+
+switch:
+  - platform: gpio
+    pin: D8
+    id: hexfet
+    name: ${display_name} Lights
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D3
+      mode: INPUT_PULLUP
+      inverted: yes
+    id: button
+    device_class: light
+    on_click:
+      then:
+        - switch.toggle: hexfet
+sensor:
+  - platform: bme280
+    temperature:
+      id: temp
+      name: ${display_name} Temp
+      oversampling: 16x
+    pressure:
+      id: press
+      name: ${display_name} Pressure
+    humidity:
+      id: humid
+      name: ${display_name} Humidity
+    address: 0x76
+    update_interval: 60s

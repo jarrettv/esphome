@@ -1,0 +1,149 @@
+
+#gpio21 zmod_reset
+#gpio 19 zmod_int0
+#gpio 18 zmod_int1
+#gpio5 dustpwr
+#gpio17 neopixel
+#gpio16 dusttx
+#gpio4 dustrx
+
+substitutions:
+  display_name: 1stFloor
+
+esphome:
+  name: homemonitor
+  platform: ESP32
+  board: featheresp32
+  includes:
+    - hpma115c0.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  id: esp_api
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
+
+# captive_portal:
+
+web_server:
+  port: 80
+
+logger:
+
+i2c:
+  id: i2c_bus
+  frequency: 400kHz
+  sda: 23
+  scl: 22
+  scan: True
+
+uart:
+  id: uart_bus
+  rx_pin: GPIO4
+  tx_pin: GPIO16
+  baud_rate: 9600
+
+# switch:
+#   - platform: gpio
+#     name: "Honeywell HPMA115C0 Power"
+#     pin: 5
+
+#   - platform: gpio
+#     name: "Renesas ZMOD INT0"
+#     pin:
+#       number: 19
+#       inverted: True #?
+#       mode: INPUT_PULLUP #?
+
+#   - platform: gpio
+#     name: "Renesas ZMOD INT1"
+#     pin:
+#       number: 18
+#       inverted: True #?
+#       mode: INPUT_PULLUP #?
+
+bme680_bsec:
+    address: 0x77
+    temperature_offset: -4.8
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto hpm = new Hpma115C0Component(60000, id(uart_bus));
+      App.register_component(hpm);
+      return {hpm->pm_1_sensor, hpm->pm_2_5_sensor, hpm->pm_4_sensor, hpm->pm_10_sensor};
+    sensors:
+      - name: ${display_name} PM <1
+        unit_of_measurement: "μg/m³"
+        icon: "mdi:vanish"
+      - name: ${display_name} PM <2.5
+        unit_of_measurement: "μg/m³"
+        icon: "mdi:vanish"
+      - name: ${display_name} PM <4
+        unit_of_measurement: "μg/m³"
+        icon: "mdi:vanish"
+      - name: ${display_name} PM <10
+        unit_of_measurement: "μg/m³"
+        icon: "mdi:vanish"
+
+  - platform: sgp40
+    name: ${display_name} VOC Index
+    compensation:
+      temperature_source: bme680_temp
+      humidity_source: bme680_humid
+    store_baseline: True
+    update_interval: 60s
+
+  - platform: bme680_bsec
+    temperature:
+      id: bme680_temp
+      name: ${display_name} Temperature
+      filters:
+        - median
+    pressure:
+      name: ${display_name} Pressure
+      filters:
+        - median
+    humidity:
+      id: bme680_humid
+      name: ${display_name} Humidity
+      filters:
+        - median
+    gas_resistance:
+      name: ${display_name} Gas Resistance
+      filters:
+        - median
+    iaq:
+      name: ${display_name} IAQ
+      filters:
+        - median
+    iaq_accuracy: # numeric value of 0, 1, 2, 3      
+      name: ${display_name} Numeric IAQ Accuracy
+    co2_equivalent: # estimate in ppm      
+      name: ${display_name} CO2 Equivalent
+      filters:
+        - median
+    breath_voc_equivalent: # estimate in ppm      
+      name: ${display_name} Breath VOC Equivalent
+      filters:
+        - median
+
+text_sensor:
+  - platform: bme680_bsec
+    iaq_accuracy: # Stabilizing, Uncertain, Calibrating, Calibrated
+      name: ${display_name} IAQ Accuracy
+      
+#renesas 4410
+
+# light:
+#   - platform: neopixelbus
+#     type: GRB
+#     pin: GPIO17
+#     num_leds: 1
+#     name: "NeoPixel Light"
+

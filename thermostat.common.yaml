@@ -5,7 +5,7 @@ esphome:
   on_boot:
     then:
       - script.execute: startup_delay
-      - script.execute: display_on
+      - script.execute: display_on_awhile
 
 logger:
 
@@ -76,7 +76,13 @@ binary_sensor:
       number: GPIO27
     on_state:
       then:
-        - script.execute: display_on
+        - if:
+            condition:
+              switch.is_on: pir_motion
+              switch.is_on: allow_display_upon_motion
+            then:
+              - script.execute: display_on_awhile
+        - component.update: oled # TODO: (jv) is this necessary?
 
 sensor:
   - platform: rotary_encoder
@@ -108,18 +114,18 @@ sensor:
             const float brightness = id(phototransistor).state / 3.9;
             id(oled)->set_brightness(brightness);
             
-  - platform: bme280
-    address: 0x76
-    temperature:
-      id: bme280_temp
-      name: ${node_friendly_name} BME280 Temperature
-    humidity:
-      id: bme280_humid
-      name: ${node_friendly_name} BME280 Humidity
-    pressure:
-      id: bme280_press
-      name: ${node_friendly_name} BME280 Pressure
-    update_interval: 30s
+  # - platform: bme280
+  #   address: 0x76
+  #   temperature:
+  #     id: bme280_temp
+  #     name: ${node_friendly_name} BME280 Temperature
+  #   humidity:
+  #     id: bme280_humid
+  #     name: ${node_friendly_name} BME280 Humidity
+  #   pressure:
+  #     id: bme280_press
+  #     name: ${node_friendly_name} BME280 Pressure
+  #   update_interval: 30s
     
   - platform: shtcx
     temperature:
@@ -357,8 +363,6 @@ switch:
       number: 2
       mode: OUTPUT
 
-    # NOTE: triac_Y2 pin number 2 not working on wroom board
-
     # Aux heat W1 white wire
   - platform: gpio
     id: triac_W1
@@ -368,7 +372,22 @@ switch:
       number: 3
       mode: OUTPUT
 
-    # NOTE: triac_W2 pin number 4 not working on both boards
+  # display control
+  - platform: template
+    id: tstat_display
+    name: ${node_friendly_name} Display
+    turn_on_action:
+      - script.execute: display_on_awhile
+    turn_off_action:
+      - lambda: 'id(oled)->turn_off();'
+    lambda: 'return id(oled)->is_on();'
+
+  # display control by motion
+  - platform: template
+    id: allow_display_upon_motion
+    name: ${node_friendly_name} Display On Motion
+    optimistic: true
+    restore_state: true
 
 climate:
   - platform: thermostat
@@ -423,7 +442,7 @@ script:
     then:
       - delay: 5s
 
-  - id: display_on
+  - id: display_on_awhile
     mode: restart
     then:
       - lambda: 'id(oled)->turn_on();'
@@ -432,7 +451,7 @@ script:
 
   - id: toggle_mode
     then:
-      - script.execute: display_on
+      - script.execute: display_on_awhile
       - lambda: |-
           auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
           switch(mode) {
@@ -461,7 +480,7 @@ script:
 
   - id: toggle_fan_mode
     then:
-      - script.execute: display_on
+      - script.execute: display_on_awhile
       - lambda: |-
           auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(tstat).fan_mode : id(soft_fan_mode);
           switch(fan_mode) {
@@ -484,7 +503,7 @@ script:
 
   - id: raise_set_temp
     then:
-      - script.execute: display_on
+      - script.execute: display_on_awhile
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
@@ -495,7 +514,7 @@ script:
 
   - id: lower_set_temp
     then:
-      - script.execute: display_on
+      - script.execute: display_on_awhile
       - lambda: |-
           // TODO: rules?
           auto temp = id(apply_set_temp_timeout).is_running() ? 
