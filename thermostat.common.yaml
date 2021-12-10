@@ -79,7 +79,7 @@ binary_sensor:
         - if:
             condition:
               #switch.is_on: pir_motion
-              switch.is_on: allow_display_upon_motion
+              switch.is_off: auto_display_disable
             then:
               - script.execute: display_on_awhile
         - component.update: oled # TODO: (jv) is this necessary?
@@ -222,7 +222,7 @@ display:
 
       auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
       auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(soft_fan_mode) : id(tstat).fan_mode;
-      auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 1.11111111111;
+      auto temp = id(apply_set_temp_timeout).is_running() ? id(soft_set_temp) : id(tstat).target_temperature_low + 0.55555555556;
 
       // do calcs as F degrees
       temp = (temp * 1.8) + 32;
@@ -301,10 +301,10 @@ display:
         it.image(0, 55, bars[barIndex], COLOR_OFF, COLOR_ON);
 
         // draw low temp
-        it.printf(0, 56, id(font6), "%.0f", temp - 2);
+        it.printf(0, 56, id(font6), "%.0f", temp - 1);
 
         // draw high temp
-        it.printf(it.get_width()+1, 56, id(font6), TextAlign::TOP_RIGHT, "%.0f", temp + 2);
+        it.printf(it.get_width()+1, 56, id(font6), TextAlign::TOP_RIGHT, "%.0f", temp + 1);
       } else {
 
         if (id(esp_api).is_connected()) {
@@ -384,8 +384,8 @@ switch:
 
   # display control by motion
   - platform: template
-    id: allow_display_upon_motion
-    name: ${node_friendly_name} Display On Motion
+    id: auto_display_disable
+    name: ${node_friendly_name} Auto Display Disable
     optimistic: true
     restore_state: true
 
@@ -483,7 +483,7 @@ script:
       - script.execute: display_on_awhile
       - lambda: |-
           auto fan_mode = id(apply_fan_mode_timeout).is_running() ? id(tstat).fan_mode : id(soft_fan_mode);
-          switch(fan_mode) {
+          switch(fan_mode.value_or(0)) {
             case CLIMATE_FAN_AUTO:
               id(soft_fan_mode) = CLIMATE_FAN_ON;
               break;
