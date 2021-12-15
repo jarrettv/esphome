@@ -1,11 +1,10 @@
 #sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome stairs.yaml run
 
 substitutions:
-  device_name: stairs
   display_name: Stairs
 
 esphome:
-  name: ${device_name}
+  name: stairs
   platform: ESP32
   board: nodemcu-32s
    
@@ -102,84 +101,123 @@ light:
     id: step0
     name: ${display_name} 01 (bottom)
     output: ledc0
+    internal: true
   - platform: monochromatic
     id: step1
     name: ${display_name} 02
     output: ledc1
+    internal: true
   - platform: monochromatic
     id: step2
     name: ${display_name} 03
     output: ledc2
+    internal: true
   - platform: monochromatic
     id: step3
     name: ${display_name} 04
     output: ledc3
+    internal: true
   - platform: monochromatic
     id: step4
     name: ${display_name} 05
     output: ledc4
+    internal: true
   - platform: monochromatic
     id: step5
     name: ${display_name} 06
     output: ledc5
+    internal: true
   - platform: monochromatic
     id: step6
     name: ${display_name} 07
     output: ledc6
+    internal: true
   - platform: monochromatic
     id: step7
     name: ${display_name} 08
     output: ledc7
+    internal: true
   - platform: monochromatic
     id: step8
     name: ${display_name} 09
     output: ledc8
+    internal: true
   - platform: monochromatic
     id: step9
     name: ${display_name} 10
     output: ledc9
+    internal: true
   - platform: monochromatic
     id: step10
     name: ${display_name} 11
     output: ledc10
+    internal: true
   - platform: monochromatic
     id: step11
     name: ${display_name} 12
     output: ledc11
+    internal: true
   - platform: monochromatic
     id: step12
     name: ${display_name} 13
     output: ledc12
+    internal: true
   - platform: monochromatic
     id: step13
     name: ${display_name} 14
     output: ledc13
+    internal: true
   - platform: monochromatic
     id: step14
     name: ${display_name} 15 (top)
     output: ledc14
+    internal: true
+  - platform: partition
+    id: step_lights
+    name: ${display_name}
+    #color_mode: brightness
+    effects:
+      - addressable_scan:
+      - addressable_twinkle:
+      - addressable_random_twinkle:
+    segments:
+      - single_light_id: step0
+      - single_light_id: step1
+      - single_light_id: step2
+      - single_light_id: step3
+      - single_light_id: step4
+      - single_light_id: step5
+      - single_light_id: step6
+      - single_light_id: step7
+      - single_light_id: step8
+      - single_light_id: step9
+      - single_light_id: step10
+      - single_light_id: step11
+      - single_light_id: step12
+      - single_light_id: step13
+      - single_light_id: step14
 
 binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO34
-      mode: INPUT_PULLUP
-      inverted: yes
-    id: button_down
-    device_class: light
-    on_click:
-      then:
-        - script.execute: darken
-  - platform: gpio
-    pin:
-      number: GPIO35
-      mode: INPUT_PULLUP
-      inverted: yes
-    id: button_up
-    device_class: light
-    on_click:
-      then:
-        - script.execute: brighten
+  # - platform: gpio
+  #   pin:
+  #     number: GPIO34
+  #     mode: INPUT_PULLUP
+  #     inverted: yes
+  #   id: button_down
+  #   device_class: light
+  #   on_click:
+  #     then:
+  #       - script.execute: darken
+  # - platform: gpio
+  #   pin:
+  #     number: GPIO35
+  #     mode: INPUT_PULLUP
+  #     inverted: yes
+  #   id: button_up
+  #   device_class: light
+  #   on_click:
+  #     then:
+  #       - script.execute: brighten
   - platform: gpio
     pin:
       number: GPIO32

@@ -8,4 +8,4 @@ substitutions:
   oled_dc_pin: GPIO26
   oled_reset_pin: GPIO25
 
-<<: !include thermostat.common.yaml
+<<: !include shared/thermostat.common.yaml

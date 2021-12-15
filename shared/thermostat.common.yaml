@@ -166,6 +166,12 @@ image:
   - file: "resources/set_temp.png"
     id: set_temp
     resize: 128x7
+  - file: "resources/fan0.png"
+    id: fan_mode_auto
+    resize: 128x13
+  - file: "resources/fan1.png"
+    id: fan_mode_on
+    resize: 128x13
   - file: "resources/mode1.png"
     id: mode_auto
     resize: 128x13
@@ -216,7 +222,7 @@ display:
       // draw boot screen
       if (id(startup_delay).is_running()) {
         it.image(0, 20, id(splash), COLOR_OFF, COLOR_ON);
-        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.3.2");
+        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.12.15");
         return;
       }
 
@@ -226,8 +232,8 @@ display:
 
       // do calcs as F degrees
       temp = (temp * 1.8) + 32;
-      auto low = temp - 2;
-      auto high = temp + 2;
+      auto low = temp - 1;
+      auto high = temp + 1;
 
       auto curTemp = (id(shtcx_temp).state * 1.8) + 32;
 
@@ -242,6 +248,12 @@ display:
           id(mode_off);
 
         it.image(0, 0, modeImage, COLOR_OFF, COLOR_ON);
+      } else if (id(apply_fan_mode_timeout).is_running()) {
+
+        auto fanImage = fan_mode == CLIMATE_FAN_ON ? id(fan_mode_on) :
+          id(fan_mode_auto);
+
+        it.image(0, 0, fanImage, COLOR_OFF, COLOR_ON);
 
       } else {
         switch (id(tstat).action) {
@@ -385,7 +397,7 @@ switch:
   # display control by motion
   - platform: template
     id: auto_display_disable
-    name: ${node_friendly_name} Auto Display Disable
+    name: ${node_friendly_name} Auto Display Disable # make it inverse so by default display works
     optimistic: true
     restore_state: true
 
@@ -446,15 +458,20 @@ script:
     mode: restart
     then:
       - lambda: 'id(oled)->turn_on();'
-      - delay: 30s
+      - delay: 18s
       - lambda: 'id(oled)->turn_off();'
 
   - id: toggle_mode
     then:
       - script.execute: display_on_awhile
       - lambda: |-
-          auto mode = id(apply_mode_timeout).is_running() ? id(soft_mode) : id(tstat).mode;
-          switch(mode) {
+          // don't allow the mode to change on initial button push
+          if (!id(apply_mode_timeout).is_running()) {
+            id(soft_mode) = id(tstat).mode;
+            return;
+          }
+
+          switch(id(soft_mode)) {
             case CLIMATE_MODE_OFF:
               id(soft_mode) = CLIMATE_MODE_AUTO;
               break;

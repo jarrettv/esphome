@@ -4,7 +4,7 @@ substitutions:
   display_name: Guestroom Desk
 
 esphome:
-  name: guest_desk
+  name: guest-desk
   platform: ESP8266
   board: d1_mini_lite
 

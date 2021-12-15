@@ -1,13 +1,13 @@
 #sudo docker run --rm -v "${PWD}":/config --device=/dev/ttyUSB0 -it esphome/esphome attic_main.yaml run
 
 substitutions:
-  device_name: attic_main
   display_name: Attic Main
 
 esphome:
-  name: $device_name
+  name: attic-main
   platform: ESP8266
   board: d1_mini_lite
+
 
 wifi:
   ssid: !secret wifi_ssid
@@ -27,7 +27,7 @@ i2c:
 switch:
   - platform: gpio
     pin: D8
-    id: ${device_name}_hexfet
+    id: hexfet
     name: ${display_name} Lights
 
 binary_sensor:
@@ -36,22 +36,22 @@ binary_sensor:
       number: D3
       mode: INPUT_PULLUP
       inverted: yes
-    id: ${device_name}_button
+    id: button
     device_class: light
     on_click:
       then:
-        - switch.toggle: ${device_name}_hexfet
+        - switch.toggle: hexfet
 sensor:
   - platform: bme280
     temperature:
-      id: ${device_name}_temp
+      id: temp
       name: ${display_name} Temp
       oversampling: 16x
     pressure:
-      id: ${device_name}_press
+      id: press
       name: ${display_name} Pressure
     humidity:
-      id: ${device_name}_humid
+      id: humid
       name: ${display_name} Humidity
     address: 0x76
     update_interval: 60s
