@@ -15,34 +15,34 @@ wifi:
 logger:
   level: INFO
 api:
-  services:
-    - service: steps_fade
-      then:
-        - script.execute: fade
+  # services:
+  #   - service: steps_fade
+  #     then:
+  #       - script.execute: fade
 
-    - service: steps_fade_up_on
-      then:
-        - script.execute: fade_up_on
+  #   - service: steps_fade_up_on
+  #     then:
+  #       - script.execute: fade_up_on
 
-    - service: steps_fade_up_off
-      then:
-        - script.execute: fade_up_off
+  #   - service: steps_fade_up_off
+  #     then:
+  #       - script.execute: fade_up_off
 
-    - service: steps_fade_down_on
-      then:
-        - script.execute: fade_down_on
+  #   - service: steps_fade_down_on
+  #     then:
+  #       - script.execute: fade_down_on
 
-    - service: steps_fade_down_off
-      then:
-        - script.execute: fade_down_off
+  #   - service: steps_fade_down_off
+  #     then:
+  #       - script.execute: fade_down_off
 
-    - service: steps_brighten
-      then:
-        - script.execute: brighten
+  #   - service: steps_brighten
+  #     then:
+  #       - script.execute: brighten
 
-    - service: steps_darken
-      then:
-        - script.execute: darken
+  #   - service: steps_darken
+  #     then:
+  #       - script.execute: darken
   
 ota:
 
