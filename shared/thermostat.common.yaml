@@ -74,6 +74,7 @@ binary_sensor:
     name: ${node_friendly_name} Motion Detection
     pin:
       number: GPIO27
+      pullup: true
     on_state:
       then:
         - if:
