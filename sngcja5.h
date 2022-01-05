@@ -180,7 +180,11 @@ class Sngcja5Component : public PollingComponent {
         uint8_t lh = Wire.read();
         uint8_t hl = Wire.read();
         uint8_t hh = Wire.read();
-        return (((uint32_t)hh << 24) | ((uint32_t)hl << 16) | ((uint32_t)lh << 8) | ((uint32_t)ll << 0));
+
+        auto result = (((uint32_t)hh << 24) | ((uint32_t)hl << 16) | ((uint32_t)lh << 8) | ((uint32_t)ll << 0));
+
+        ESP_LOGD(TAG, "Address: %d ll=%d lh=%d hl=%d hh=%d result=", addr, ll, lh, hl, hh, result);
+        return result;
       }
       return (0); //Sensor did not respond
     }
