@@ -183,7 +183,7 @@ class Sngcja5Component : public PollingComponent {
 
         auto result = (((uint32_t)hh << 24) | ((uint32_t)hl << 16) | ((uint32_t)lh << 8) | ((uint32_t)ll << 0));
 
-        ESP_LOGD(TAG, "Address: %d ll=%d lh=%d hl=%d hh=%d result=", addr, ll, lh, hl, hh, result);
+        ESP_LOGD(TAG, "Address: %d ll=%d lh=%d hl=%d hh=%d result=%d", addr, ll, lh, hl, hh, result);
         return result;
       }
       return (0); //Sensor did not respond
