@@ -1,5 +1,6 @@
 #include "esphome.h"
 #include <Wire.h>
+#include "esphome/core/log.h"
 
 static const char *const TAG = "sngcja5.sensor";
 
@@ -8,7 +9,6 @@ class Sngcja5Component : public PollingComponent {
 
   Sngcja5Component(uint32_t update_interval) : PollingComponent(update_interval) {}
 
-  // SFE_PARTICLE_SENSOR myAirSensor;
   Sensor *pm_1_sensor = new Sensor();
   Sensor *pm_2_5_sensor = new Sensor();
   Sensor *pm_10_sensor = new Sensor();
@@ -18,6 +18,19 @@ class Sngcja5Component : public PollingComponent {
   void setup() override {
     ESP_LOGCONFIG(TAG, "Setting up SN-GCJA5...");
     Wire.begin();
+  }
+
+  void dump_config() override {
+    ESP_LOGCONFIG(TAG, "SN-GCJA5:");
+
+    LOG_SENSOR("  ", "PM1.0", pm_1_sensor);
+    LOG_SENSOR("  ", "PM2.5", pm_2_5_sensor);
+    LOG_SENSOR("  ", "PM10.0", pm_10_sensor);
+
+    ESP_LOGCONFIG(TAG, "  Sensor Status: %d", getStatusSensors());
+    ESP_LOGCONFIG(TAG, "  PD Status: %d", getStatusPD());
+    ESP_LOGCONFIG(TAG, "  LD Status: %d", getStatusLD());
+    ESP_LOGCONFIG(TAG, "  Fan Status: %d", getStatusFan());
   }
 
   void update() override {

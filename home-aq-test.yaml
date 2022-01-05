@@ -42,12 +42,6 @@ i2c:
   scl: 22
   scan: True
 
-uart:
-  id: uart_bus
-  rx_pin: GPIO4
-  tx_pin: GPIO16
-  baud_rate: 9600
-
 # switch:
 #   - platform: gpio
 #     name: "Honeywell HPMA115C0 Power"
