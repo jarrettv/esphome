@@ -3,15 +3,16 @@
 #include "esphome/core/log.h"
 
 static const char *const TAG = "sngcja5.sensor";
+static const uint8_t I2C_ADDR = 0x33; // fixed device address
 
 class Sngcja5Component : public PollingComponent {
   public:
 
   Sngcja5Component(uint32_t update_interval) : PollingComponent(update_interval) {}
 
-  Sensor *pm_1_sensor = new Sensor();
-  Sensor *pm_2_5_sensor = new Sensor();
-  Sensor *pm_10_sensor = new Sensor();
+  Sensor *pm1_sensor = new Sensor();
+  Sensor *pm2_5_sensor = new Sensor();
+  Sensor *pm10_sensor = new Sensor();
 
   float get_setup_priority() const override { return esphome::setup_priority::DATA; }
 
@@ -22,113 +23,92 @@ class Sngcja5Component : public PollingComponent {
 
   void dump_config() override {
     ESP_LOGCONFIG(TAG, "SN-GCJA5:");
-
-    LOG_SENSOR("  ", "PM1.0", pm_1_sensor);
-    LOG_SENSOR("  ", "PM2.5", pm_2_5_sensor);
-    LOG_SENSOR("  ", "PM10.0", pm_10_sensor);
-
-    // ESP_LOGCONFIG(TAG, "  Sensor Status: %d", getStatusSensors());
-    // ESP_LOGCONFIG(TAG, "  PD Status: %d", getStatusPD());
-    // ESP_LOGCONFIG(TAG, "  LD Status: %d", getStatusLD());
-    // ESP_LOGCONFIG(TAG, "  Fan Status: %d", getStatusFan());
+    LOG_SENSOR("  ", "PM1.0", pm1_sensor);
+    LOG_SENSOR("  ", "PM2.5", pm2_5_sensor);
+    LOG_SENSOR("  ", "PM10.0", pm10_sensor);
   }
 
   void update() override {
-
-    if (!readMeasurement()) {
-      ESP_LOGE(TAG, "Error reading measurement");
+    if (!read_measurement()) {
+      ESP_LOGE(TAG, "Error reading i2c data");
       return;
     }
 
     delay(8);
-    float pm1 = getPM(SNGCJA5_PM1);
-    pm_1_sensor->publish_state(pm1);
+    auto pm1 = get_pm(PM1);
+    pm1_sensor->publish_state(pm1);
 
-    float pm2_5 = getPM(SNGCJA5_PM2_5);
-    pm_2_5_sensor->publish_state(pm2_5);
+    auto pm2_5 = get_pm(PM2_5);
+    pm2_5_sensor->publish_state(pm2_5);
 
-    float pm10 = getPM(SNGCJA5_PM10);
-    pm_10_sensor->publish_state(pm10);
+    auto pm10 = get_pm(PM10);
+    pm10_sensor->publish_state(pm10);
     
-    ESP_LOGD(TAG, "  Sensor status %d", getStatusSensors());
-    ESP_LOGD(TAG, "  PD status %d", getStatusPD());
-    ESP_LOGD(TAG, "  LD operational status %d", getStatusLD());
-    ESP_LOGD(TAG, "  Fan operational status %d", getStatusFan());
+    ESP_LOGD(TAG, "  Particle counts: 0.5=%d 1.0=%d 2.5=%d 5.0=%d 7.5=%d 10=%d", 
+      read_register16(PCOUNT_0_5),
+      read_register16(PCOUNT_1),
+      read_register16(PCOUNT_2_5),
+      read_register16(PCOUNT_5),
+      read_register16(PCOUNT_7_5),
+      read_register16(PCOUNT_10));
+    
+    auto state = read_register8(STATE);
+    ESP_LOGD(TAG, "  Sensor status %d", (state >> 6) & 0b11);
+    ESP_LOGD(TAG, "  PD status %d", (state >> 4) & 0b11);
+    ESP_LOGD(TAG, "  LD operational status %d", (state >> 2) & 0b11);
+    ESP_LOGD(TAG, "  Fan operational status %d", state & 0b11);
   }
 
   private:
-    
-    uint8_t _deviceAddress = 0x33; //Default, unchangable address
-    uint8_t read_buf[100];         // buffer to store data read
-    uint8_t offset;                // offset in read_buf
 
-    enum SNGCJA5_REGISTERS {
-      SNGCJA5_PM1 = 0x00,
-      SNGCJA5_PM2_5 = 0x04,
-      SNGCJA5_PM10 = 0x08,
-      SNGCJA5_PCOUNT_0_5 = 0x0C,
-      SNGCJA5_PCOUNT_1 = 0x0E,
-      SNGCJA5_PCOUNT_2_5 = 0x10,
-      SNGCJA5_PCOUNT_5 = 0x14,
-      SNGCJA5_PCOUNT_7_5 = 0x16,
-      SNGCJA5_PCOUNT_10 = 0x18,
-      SNGCJA5_STATE = 0x26,
+    enum REGISTERS {
+      PM1 = 0x00,
+      PM2_5 = 0x04,
+      PM10 = 0x08,
+      PCOUNT_0_5 = 0x0C,
+      PCOUNT_1 = 0x0E,
+      PCOUNT_2_5 = 0x10,
+      PCOUNT_5 = 0x14,
+      PCOUNT_7_5 = 0x16,
+      PCOUNT_10 = 0x18,
+      STATE = 0x26,
     };
 
-    float getPM(uint8_t pmRegister) {
-      //Given a mass density PM register, do conversion and return mass density
-      uint32_t count = readRegister32(pmRegister);
+    uint8_t buffer_[100]; // for data read from device
+
+    float get_pm(uint8_t pmRegister) {
+      uint32_t count = read_register32(pmRegister);
       return (count / 1000.0);
     }
 
-    uint8_t getState() {
-      return (readRegister8(SNGCJA5_STATE));
-    }
+    bool read_measurement() {      
+      memset(buffer_, 0x0, sizeof(buffer_)); // reset
+      uint8_t offset = 0;
 
-    uint8_t getStatusSensors() {
-      return ((getState() >> 6) & 0b11);
-    }
-
-    uint8_t getStatusPD() {
-      return ((getState() >> 4) & 0b11);
-    }
-
-    uint8_t getStatusLD() {
-      return ((getState() >> 2) & 0b11);
-    }
-
-    uint8_t getStatusFan() {
-      return ((getState() >> 0) & 0b11);
-    }
-
-    bool readMeasurement() {
-      // reset buffer
-      memset (read_buf, 0x0, sizeof(read_buf));
-      offset = 0;
-
-      Wire.beginTransmission(_deviceAddress);
-      Wire.write(SNGCJA5_PM1); // this is beginning address
+      Wire.beginTransmission(I2C_ADDR);
+      Wire.write(PM1); // this is beginning address
 
       if (Wire.endTransmission(false) != 0)
         return (false); //Sensor did not ACK
 
-      Wire.requestFrom(_deviceAddress, (uint8_t)40);
+      // read all data available from device into buffer
+      Wire.requestFrom(I2C_ADDR, (uint8_t)40);
       while (Wire.available())
-        read_buf[offset++] = Wire.read();
+        buffer_[offset++] = Wire.read();
 
-      return(true);
+      return (true);
     }
     
-    uint8_t readRegister8(uint8_t addr) {
-      return(read_buf[addr]);
+    uint8_t read_register8(uint8_t addr) {
+      return(buffer_[addr]);
     }
     
-    uint16_t readRegister16(uint8_t addr) {
-      return ((uint16_t)read_buf[addr+1] << 8 | read_buf[addr]);
+    uint16_t read_register16(uint8_t addr) {
+      return ((uint16_t)buffer_[addr+1] << 8 | buffer_[addr]);
     }
     
-    uint32_t readRegister32(uint8_t addr) {
-      return (((uint32_t)read_buf[addr+3] << 24) | ((uint32_t)read_buf[addr+2] << 16) | \
-        ((uint32_t)read_buf[addr+1] << 8) | ((uint32_t)read_buf[addr] << 0));
+    uint32_t read_register32(uint8_t addr) {
+      return (((uint32_t)buffer_[addr+3] << 24) | ((uint32_t)buffer_[addr+2] << 16) | \
+        ((uint32_t)buffer_[addr+1] << 8) | ((uint32_t)buffer_[addr] << 0));
     }
 };
