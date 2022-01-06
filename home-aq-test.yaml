@@ -70,7 +70,7 @@ sensor:
     lambda: |-
       auto sngcja5 = new Sngcja5Component(15000);
       App.register_component(sngcja5);
-      return {sngcja5->pm_1_sensor, sngcja5->pm_2_5_sensor,  sngcja5->pm_10_sensor};
+      return {sngcja5->pm1_sensor, sngcja5->pm2_5_sensor,  sngcja5->pm10_sensor};
     sensors:
       - name: ${display_name} PM <1
         unit_of_measurement: "μg/m³"
