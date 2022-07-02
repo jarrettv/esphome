@@ -15,34 +15,14 @@ wifi:
 logger:
   level: INFO
 api:
-  # services:
-  #   - service: steps_fade
-  #     then:
-  #       - script.execute: fade
+  services:
+    - service: steps_brighten
+      then:
+        - script.execute: brighten
 
-  #   - service: steps_fade_up_on
-  #     then:
-  #       - script.execute: fade_up_on
-
-  #   - service: steps_fade_up_off
-  #     then:
-  #       - script.execute: fade_up_off
-
-  #   - service: steps_fade_down_on
-  #     then:
-  #       - script.execute: fade_down_on
-
-  #   - service: steps_fade_down_off
-  #     then:
-  #       - script.execute: fade_down_off
-
-  #   - service: steps_brighten
-  #     then:
-  #       - script.execute: brighten
-
-  #   - service: steps_darken
-  #     then:
-  #       - script.execute: darken
+    - service: steps_darken
+      then:
+        - script.execute: darken
   
 ota:
 
@@ -96,143 +76,101 @@ output:
     pin: GPIO26
     id: ledc14
 
-light:
-  - platform: rgb
-    id: step_0_1_2
-    red: ledc0
-    green: ledc1
-    blue: ledc2
-  - platform: rgb
-    id: step_3_4_5
-    red: ledc3
-    green: ledc4
-    blue: ledc5
-  - platform: rgb
-    id: step_6_7_8
-    red: ledc6
-    green: ledc7
-    blue: ledc8
-  - platform: rgb
-    id: step_9_10_11
-    red: ledc9
-    green: ledc10
-    blue: ledc11
-  - platform: rgb
-    id: step_12_13_14
-    red: ledc12
-    green: ledc13
-    blue: ledc14
-  
-  # - platform: monochromatic
-  #   id: step0
-  #   name: ${display_name} 01 (bottom)
-  #   output: ledc0
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step1
-  #   name: ${display_name} 02
-  #   output: ledc1
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step2
-  #   name: ${display_name} 03
-  #   output: ledc2
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step3
-  #   name: ${display_name} 04
-  #   output: ledc3
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step4
-  #   name: ${display_name} 05
-  #   output: ledc4
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step5
-  #   name: ${display_name} 06
-  #   output: ledc5
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step6
-  #   name: ${display_name} 07
-  #   output: ledc6
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step7
-  #   name: ${display_name} 08
-  #   output: ledc7
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step8
-  #   name: ${display_name} 09
-  #   output: ledc8
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step9
-  #   name: ${display_name} 10
-  #   output: ledc9
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step10
-  #   name: ${display_name} 11
-  #   output: ledc10
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step11
-  #   name: ${display_name} 12
-  #   output: ledc11
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step12
-  #   name: ${display_name} 13
-  #   output: ledc12
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step13
-  #   name: ${display_name} 14
-  #   output: ledc13
-  #   #internal: true
-  # - platform: monochromatic
-  #   id: step14
-  #   name: ${display_name} 15 (top)
-  #   output: ledc14
-  #   #internal: true
+light:  
+  - platform: monochromatic
+    id: step0
+    name: ${display_name} 01 (bottom)
+    output: ledc0
+    internal: true
+  - platform: monochromatic
+    id: step1
+    name: ${display_name} 02
+    output: ledc1
+    internal: true
+  - platform: monochromatic
+    id: step2
+    name: ${display_name} 03
+    output: ledc2
+    internal: true
+  - platform: monochromatic
+    id: step3
+    name: ${display_name} 04
+    output: ledc3
+    internal: true
+  - platform: monochromatic
+    id: step4
+    name: ${display_name} 05
+    output: ledc4
+    internal: true
+  - platform: monochromatic
+    id: step5
+    name: ${display_name} 06
+    output: ledc5
+    internal: true
+  - platform: monochromatic
+    id: step6
+    name: ${display_name} 07
+    output: ledc6
+    internal: true
+  - platform: monochromatic
+    id: step7
+    name: ${display_name} 08
+    output: ledc7
+    internal: true
+  - platform: monochromatic
+    id: step8
+    name: ${display_name} 09
+    output: ledc8
+    internal: true
+  - platform: monochromatic
+    id: step9
+    name: ${display_name} 10
+    output: ledc9
+    internal: true
+  - platform: monochromatic
+    id: step10
+    name: ${display_name} 11
+    output: ledc10
+    internal: true
+  - platform: monochromatic
+    id: step11
+    name: ${display_name} 12
+    output: ledc11
+    internal: true
+  - platform: monochromatic
+    id: step12
+    name: ${display_name} 13
+    output: ledc12
+    internal: true
+  - platform: monochromatic
+    id: step13
+    name: ${display_name} 14
+    output: ledc13
+    internal: true
+  - platform: monochromatic
+    id: step14
+    name: ${display_name} 15 (top)
+    output: ledc14
+    internal: true
   - platform: partition
     id: step_lights
     name: ${display_name}
-    effects:
-      - random:
-      - pulse:
-      - flicker:
-      - addressable_rainbow:
-      - addressable_color_wipe:
-      - addressable_scan:
-      - addressable_twinkle:
-      - addressable_random_twinkle:
-      - addressable_fireworks:
-      - addressable_flicker:
     segments:
-      - single_light_id: step_0_1_2
-      - single_light_id: step_3_4_5
-      - single_light_id: step_6_7_8
-      - single_light_id: step_9_10_11
-      - single_light_id: step_12_13_14
-      # - single_light_id: step0
-      # - single_light_id: step1
-      # - single_light_id: step2
-      # - single_light_id: step3
-      # - single_light_id: step4
-      # - single_light_id: step5
-      # - single_light_id: step6
-      # - single_light_id: step7
-      # - single_light_id: step8
-      # - single_light_id: step9
-      # - single_light_id: step10
-      # - single_light_id: step11
-      # - single_light_id: step12
-      # - single_light_id: step13
-      # - single_light_id: step14
+       - single_light_id: step0
+       - single_light_id: step1
+       - single_light_id: step2
+       - single_light_id: step3
+       - single_light_id: step4
+       - single_light_id: step5
+       - single_light_id: step6
+       - single_light_id: step7
+       - single_light_id: step8
+       - single_light_id: step9
+       - single_light_id: step10
+       - single_light_id: step11
+       - single_light_id: step12
+       - single_light_id: step13
+       - single_light_id: step14
 
 # binary_sensor:
 #   # - platform: gpio
@@ -266,7 +204,7 @@ light:
 #       then:
 #         - script.execute: fade
 
-# script:
+script:
 #   - id: fade
 #     then:
 #       - light.toggle: step0
@@ -462,97 +400,97 @@ light:
 #       #       call.set_transition_length(1000 + (150 * i));
 #       #       call.perform();
 #       #     }
-#   - id: darken
-#     then:
-#       - light.dim_relative:
-#           id: step0
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step1
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step2
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step3
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step4
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step5
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step6
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step7
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step8
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step9
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step10
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step11
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step12
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step13
-#           relative_brightness: -5%
-#       - light.dim_relative:
-#           id: step14
-#           relative_brightness: -5%
-#   - id: brighten
-#     then:
-#       - light.dim_relative:
-#           id: step0
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step1
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step2
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step3
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step4
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step5
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step6
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step7
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step8
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step9
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step10
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step11
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step12
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step13
-#           relative_brightness: 5%
-#       - light.dim_relative:
-#           id: step14
-#           relative_brightness: 5%
+  - id: darken
+    then:
+      - light.dim_relative:
+          id: step0
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step1
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step2
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step3
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step4
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step5
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step6
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step7
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step8
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step9
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step10
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step11
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step12
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step13
+          relative_brightness: -5%
+      - light.dim_relative:
+          id: step14
+          relative_brightness: -5%
+  - id: brighten
+    then:
+      - light.dim_relative:
+          id: step0
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step1
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step2
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step3
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step4
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step5
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step6
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step7
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step8
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step9
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step10
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step11
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step12
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step13
+          relative_brightness: 5%
+      - light.dim_relative:
+          id: step14
+          relative_brightness: 5%

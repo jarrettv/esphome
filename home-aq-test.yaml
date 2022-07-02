@@ -14,8 +14,8 @@ esphome:
   name: home-aq-test
   platform: ESP32
   board: featheresp32  
-  includes:
-    - sngcja5.h
+  # includes:
+  #   - sngcja5.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -65,22 +65,22 @@ bme680_bsec:
     address: 0x77
     temperature_offset: -4.8
 
-sensor:
-  - platform: custom
-    lambda: |-
-      auto sngcja5 = new Sngcja5Component(15000);
-      App.register_component(sngcja5);
-      return {sngcja5->pm1_sensor, sngcja5->pm2_5_sensor,  sngcja5->pm10_sensor};
-    sensors:
-      - name: ${display_name} PM <1
-        unit_of_measurement: "μg/m³"
-        icon: "mdi:vanish"
-      - name: ${display_name} PM <2.5
-        unit_of_measurement: "μg/m³"
-        icon: "mdi:vanish"
-      - name: ${display_name} PM <10
-        unit_of_measurement: "μg/m³"
-        icon: "mdi:vanish"
+# sensor:
+#   - platform: custom
+#     lambda: |-
+#       auto sngcja5 = new Sngcja5Component(15000);
+#       App.register_component(sngcja5);
+#       return {sngcja5->pm1_sensor, sngcja5->pm2_5_sensor,  sngcja5->pm10_sensor};
+#     sensors:
+#       - name: ${display_name} PM <1
+#         unit_of_measurement: "μg/m³"
+#         icon: "mdi:vanish"
+#       - name: ${display_name} PM <2.5
+#         unit_of_measurement: "μg/m³"
+#         icon: "mdi:vanish"
+#       - name: ${display_name} PM <10
+#         unit_of_measurement: "μg/m³"
+#         icon: "mdi:vanish"
 
   - platform: sgp40
     name: ${display_name} VOC Index
@@ -129,6 +129,60 @@ text_sensor:
     iaq_accuracy: # Stabilizing, Uncertain, Calibrating, Calibrated
       name: ${display_name} IAQ Accuracy
       
+
+# - platform: template
+#     name: "Kitchen Humidity"
+#     id: govee1_humidity
+#     unit_of_measurement: '%'
+#     icon: "mdi:water-percent"
+#   - platform: template
+#     name: "Kitchen Temperature"
+#     id: govee1_temperature
+#     unit_of_measurement: '°C'
+#     icon: "mdi:thermometer"
+#   - platform: template
+#     name: "Kitchen Battery"
+#     id: govee1_battery
+#     unit_of_measurement: '%'
+#     icon: "mdi:battery"
+
+esp32_ble_tracker:
+  on_ble_advertise:
+    - mac_address: A4:C1:38:11:22:33 #update to your govee device mac address
+      then:
+        - lambda: |-
+            ESP_LOGD("ble_adv", "New BLE device");
+            ESP_LOGD("ble_adv", "  address: %s", x.address_str().c_str());
+            ESP_LOGD("ble_adv", "  name: %s", x.get_name().c_str());
+            ESP_LOGD("ble_adv", "  Advertised service UUIDs:");
+            for (auto uuid : x.get_service_uuids()) {
+                ESP_LOGD("ble_adv", "    service uuid %s", uuid.to_string().c_str());
+            }
+            ESP_LOGD("ble_adv", "  Advertised service data:");
+            for (auto data : x.get_service_datas()) {
+                ESP_LOGD("ble_adv", "    service data uuid - %s: (length %i)", data.uuid.to_string().c_str(), data.data.size());
+            }
+            ESP_LOGD("ble_adv", "  Advertised manufacturer data:");
+            for (auto data : x.get_manufacturer_datas()) {
+                ESP_LOGD("ble_adv", "    mfg data uuid %s: (length %i)", data.uuid.to_string().c_str(), data.data.size());
+            }
+
+# - mac_address: A4:C1:38:AA:BB:CC #govee1
+#       manufacturer_id: EC88
+#       then:
+#         - lambda: |-
+#             const int basenum = (int16_t(x[1]) << 16) + (int16_t(x[2]) << 8) + int16_t(x[3]);
+#             ESP_LOGD("ble_adv", "goveesensor basenum: (%d)", basenum);
+#             const float temperature = basenum / 10000.0f;
+#             const float humidity = (basenum % 1000) / 10.0f;
+#             const float battery_level = uint16_t(x[4]) / 1.0f;
+#             ESP_LOGD("ble_adv", "  Temperature: %.2f°C", temperature);
+#             ESP_LOGD("ble_adv", "  Humidity: %.2f", humidity);
+#             ESP_LOGD("ble_adv", "  Battery Level: %.0f percent", battery_level);
+#             id(govee1_temperature).publish_state(temperature);
+#             id(govee1_humidity).publish_state(humidity);
+#             id(govee1_battery).publish_state(battery_level);
+
 #renesas 4410
 
 # light:
