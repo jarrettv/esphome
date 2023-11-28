@@ -19,10 +19,21 @@ api:
     - service: steps_brighten
       then:
         - script.execute: brighten
-
     - service: steps_darken
       then:
         - script.execute: darken
+    - service: steps_fade_up_on
+      then:
+        - script.execute: fade_up_on
+    - service: steps_fade_up_off
+      then:
+        - script.execute: fade_up_off
+    - service: steps_fade_down_on
+      then:
+        - script.execute: fade_down_on
+    - service: steps_fade_down_off
+      then:
+        - script.execute: fade_down_off
   
 ota:
 
@@ -75,102 +86,121 @@ output:
   - platform: ledc
     pin: GPIO26
     id: ledc14
+  - platform: template
+    id: virtual_light
+    type: float
+    write_action: 
+      - output.set_level:
+          id: ledc0
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc1
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc2
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc3
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc4
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc5
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc6
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc7
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc8
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc9
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc10
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc11
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc12
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc13
+          level: !lambda return state;
+      - output.set_level:
+          id: ledc14
+          level: !lambda return state;
 
-light:  
+light:
   - platform: monochromatic
     id: step0
-    name: ${display_name} 01 (bottom)
     output: ledc0
-    internal: true
   - platform: monochromatic
     id: step1
-    name: ${display_name} 02
     output: ledc1
-    internal: true
   - platform: monochromatic
     id: step2
-    name: ${display_name} 03
     output: ledc2
-    internal: true
   - platform: monochromatic
     id: step3
-    name: ${display_name} 04
     output: ledc3
-    internal: true
   - platform: monochromatic
     id: step4
-    name: ${display_name} 05
     output: ledc4
-    internal: true
   - platform: monochromatic
     id: step5
-    name: ${display_name} 06
     output: ledc5
-    internal: true
   - platform: monochromatic
     id: step6
-    name: ${display_name} 07
     output: ledc6
-    internal: true
   - platform: monochromatic
     id: step7
-    name: ${display_name} 08
     output: ledc7
-    internal: true
   - platform: monochromatic
     id: step8
-    name: ${display_name} 09
     output: ledc8
-    internal: true
   - platform: monochromatic
     id: step9
-    name: ${display_name} 10
     output: ledc9
-    internal: true
   - platform: monochromatic
     id: step10
-    name: ${display_name} 11
     output: ledc10
-    internal: true
   - platform: monochromatic
     id: step11
-    name: ${display_name} 12
     output: ledc11
-    internal: true
   - platform: monochromatic
     id: step12
-    name: ${display_name} 13
     output: ledc12
-    internal: true
   - platform: monochromatic
     id: step13
-    name: ${display_name} 14
     output: ledc13
-    internal: true
   - platform: monochromatic
     id: step14
-    name: ${display_name} 15 (top)
     output: ledc14
-    internal: true
-  - platform: partition
+  - platform: monochromatic
     id: step_lights
     name: ${display_name}
-    segments:
-       - single_light_id: step0
-       - single_light_id: step1
-       - single_light_id: step2
-       - single_light_id: step3
-       - single_light_id: step4
-       - single_light_id: step5
-       - single_light_id: step6
-       - single_light_id: step7
-       - single_light_id: step8
-       - single_light_id: step9
-       - single_light_id: step10
-       - single_light_id: step11
-       - single_light_id: step12
-       - single_light_id: step13
-       - single_light_id: step14
+    output: virtual_light
+
+  # - platform: light
+  #   id: step_lights
+  #   name: ${display_name}
+  #   effects:
+  #     - random:
+  #     - addressable_rainbow:
+  #     - addressable_scan:
+  #     - addressable_twinkle:
+  #   segments:
+  #     - single_light_id: step_0_1_2
+  #     - single_light_id: step_3_4_5
+  #     - single_light_id: step_6_7_8
+  #     - single_light_id: step_9_10_11
+  #     - single_light_id: step_12_13_14
 
 # binary_sensor:
 #   # - platform: gpio
@@ -205,201 +235,162 @@ light:
 #         - script.execute: fade
 
 script:
-#   - id: fade
-#     then:
-#       - light.toggle: step0
-#       - delay: 120ms
-#       - light.toggle: step1
-#       - delay: 120ms
-#       - light.toggle: step2
-#       - delay: 120ms
-#       - light.toggle: step3
-#       - delay: 120ms
-#       - light.toggle: step4
-#       - delay: 120ms
-#       - light.toggle: step5
-#       - delay: 120ms
-#       - light.toggle: step6
-#       - delay: 120ms
-#       - light.toggle: step7
-#       - delay: 120ms
-#       - light.toggle: step8
-#       - delay: 120ms
-#       - light.toggle: step9
-#       - delay: 120ms
-#       - light.toggle: step10
-#       - delay: 120ms
-#       - light.toggle: step11
-#       - delay: 120ms
-#       - light.toggle: step12
-#       - delay: 120ms
-#       - light.toggle: step13
-#       - delay: 120ms
-#       - light.toggle: step14
-#       # - lambda: |-
-#       #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-#       #     for (int i {0}; i <= 14; i++) {
-#       #       auto call = lights[i]->toggle();
-#       #       call.set_transition_length(1000);
-#       #       call.perform();
-#       #       delay_microseconds_accurate(200);
-#       #     }
-#   - id: fade_up_on
-#     then:
-#       - light.turn_on: step0
-#       - delay: 120ms
-#       - light.turn_on: step1
-#       - delay: 120ms
-#       - light.turn_on: step2
-#       - delay: 120ms
-#       - light.turn_on: step3
-#       - delay: 120ms
-#       - light.turn_on: step4
-#       - delay: 120ms
-#       - light.turn_on: step5
-#       - delay: 120ms
-#       - light.turn_on: step6
-#       - delay: 120ms
-#       - light.turn_on: step7
-#       - delay: 120ms
-#       - light.turn_on: step8
-#       - delay: 120ms
-#       - light.turn_on: step9
-#       - delay: 120ms
-#       - light.turn_on: step10
-#       - delay: 120ms
-#       - light.turn_on: step11
-#       - delay: 120ms
-#       - light.turn_on: step12
-#       - delay: 120ms
-#       - light.turn_on: step13
-#       - delay: 120ms
-#       - light.turn_on: step14
-#       # - lambda: |-
-#       #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-#       #     for (int i {0}; i <= 14; i++) {
-#       #       if (lights[i]->remote_values.is_on()) continue;
-#       #       auto call = lights[i]->turn_on();
-#       #       call.set_transition_length(1000 + (150 * i));
-#       #       call.perform();
-#       #     }
-#   - id: fade_down_on
-#     then:
-#       - light.turn_on: step14
-#       - delay: 120ms
-#       - light.turn_on: step13
-#       - delay: 120ms
-#       - light.turn_on: step12
-#       - delay: 120ms
-#       - light.turn_on: step11
-#       - delay: 120ms
-#       - light.turn_on: step10
-#       - delay: 120ms
-#       - light.turn_on: step9
-#       - delay: 120ms
-#       - light.turn_on: step8
-#       - delay: 120ms
-#       - light.turn_on: step7
-#       - delay: 120ms
-#       - light.turn_on: step6
-#       - delay: 120ms
-#       - light.turn_on: step5
-#       - delay: 120ms
-#       - light.turn_on: step4
-#       - delay: 120ms
-#       - light.turn_on: step3
-#       - delay: 120ms
-#       - light.turn_on: step2
-#       - delay: 120ms
-#       - light.turn_on: step1
-#       - delay: 120ms
-#       - light.turn_on: step0
-#       # - lambda: |-
-#       #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-#       #     for (int i {0}; i <= 0; i++) {
-#       #       if (lights[14 - i]->remote_values.is_on()) continue;
-#       #       auto call = lights[14 - i]->turn_on();
-#       #       call.set_transition_length(1000 + (150 * i));
-#       #       call.perform();
-#       #     }
-#   - id: fade_up_off
-#     then:
-#       - light.turn_off: step0
-#       - delay: 120ms
-#       - light.turn_off: step1
-#       - delay: 120ms
-#       - light.turn_off: step2
-#       - delay: 120ms
-#       - light.turn_off: step3
-#       - delay: 120ms
-#       - light.turn_off: step4
-#       - delay: 120ms
-#       - light.turn_off: step5
-#       - delay: 120ms
-#       - light.turn_off: step6
-#       - delay: 120ms
-#       - light.turn_off: step7
-#       - delay: 120ms
-#       - light.turn_off: step8
-#       - delay: 120ms
-#       - light.turn_off: step9
-#       - delay: 120ms
-#       - light.turn_off: step10
-#       - delay: 120ms
-#       - light.turn_off: step11
-#       - delay: 120ms
-#       - light.turn_off: step12
-#       - delay: 120ms
-#       - light.turn_off: step13
-#       - delay: 120ms
-#       - light.turn_off: step14
-#       # - lambda: |-
-#       #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-#       #     for (int i {0}; i <= 14; i++) {
-#       #       if (!lights[i]->remote_values.is_on()) continue;
-#       #       auto call = lights[i]->turn_off();
-#       #       call.set_transition_length(1000 + (150 * i));
-#       #       call.perform();
-#       #     }
-#   - id: fade_down_off
-#     then:
-#       - light.turn_off: step14
-#       - delay: 120ms
-#       - light.turn_off: step13
-#       - delay: 120ms
-#       - light.turn_off: step12
-#       - delay: 120ms
-#       - light.turn_off: step11
-#       - delay: 120ms
-#       - light.turn_off: step10
-#       - delay: 120ms
-#       - light.turn_off: step9
-#       - delay: 120ms
-#       - light.turn_off: step8
-#       - delay: 120ms
-#       - light.turn_off: step7
-#       - delay: 120ms
-#       - light.turn_off: step6
-#       - delay: 120ms
-#       - light.turn_off: step5
-#       - delay: 120ms
-#       - light.turn_off: step4
-#       - delay: 120ms
-#       - light.turn_off: step3
-#       - delay: 120ms
-#       - light.turn_off: step2
-#       - delay: 120ms
-#       - light.turn_off: step1
-#       - delay: 120ms
-#       - light.turn_off: step0
-#       # - lambda: |-
-#       #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
-#       #     for (int i {0}; i <= 14; i++) {
-#       #       if (!lights[14 - i]->remote_values.is_on()) continue;
-#       #       auto call = lights[14 - i]->turn_off();
-#       #       call.set_transition_length(1000 + (150 * i));
-#       #       call.perform();
-#       #     }
+  - id: fade_up_on
+    then:
+      - light.turn_on: step0
+      - delay: 120ms
+      - light.turn_on: step1
+      - delay: 120ms
+      - light.turn_on: step2
+      - delay: 120ms
+      - light.turn_on: step3
+      - delay: 120ms
+      - light.turn_on: step4
+      - delay: 120ms
+      - light.turn_on: step5
+      - delay: 120ms
+      - light.turn_on: step6
+      - delay: 120ms
+      - light.turn_on: step7
+      - delay: 120ms
+      - light.turn_on: step8
+      - delay: 120ms
+      - light.turn_on: step9
+      - delay: 120ms
+      - light.turn_on: step10
+      - delay: 120ms
+      - light.turn_on: step11
+      - delay: 120ms
+      - light.turn_on: step12
+      - delay: 120ms
+      - light.turn_on: step13
+      - delay: 120ms
+      - light.turn_on: step14
+      # - lambda: |-
+      #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+      #     for (int i {0}; i <= 14; i++) {
+      #       if (lights[i]->remote_values.is_on()) continue;
+      #       auto call = lights[i]->turn_on();
+      #       call.set_transition_length(1000 + (150 * i));
+      #       call.perform();
+      #     }
+  - id: fade_down_on
+    then:
+      - light.turn_on: step14
+      - delay: 120ms
+      - light.turn_on: step13
+      - delay: 120ms
+      - light.turn_on: step12
+      - delay: 120ms
+      - light.turn_on: step11
+      - delay: 120ms
+      - light.turn_on: step10
+      - delay: 120ms
+      - light.turn_on: step9
+      - delay: 120ms
+      - light.turn_on: step8
+      - delay: 120ms
+      - light.turn_on: step7
+      - delay: 120ms
+      - light.turn_on: step6
+      - delay: 120ms
+      - light.turn_on: step5
+      - delay: 120ms
+      - light.turn_on: step4
+      - delay: 120ms
+      - light.turn_on: step3
+      - delay: 120ms
+      - light.turn_on: step2
+      - delay: 120ms
+      - light.turn_on: step1
+      - delay: 120ms
+      - light.turn_on: step0
+      # - lambda: |-
+      #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+      #     for (int i {0}; i <= 0; i++) {
+      #       if (lights[14 - i]->remote_values.is_on()) continue;
+      #       auto call = lights[14 - i]->turn_on();
+      #       call.set_transition_length(1000 + (150 * i));
+      #       call.perform();
+      #     }
+  - id: fade_up_off
+    then:
+      - light.turn_off: step0
+      - delay: 120ms
+      - light.turn_off: step1
+      - delay: 120ms
+      - light.turn_off: step2
+      - delay: 120ms
+      - light.turn_off: step3
+      - delay: 120ms
+      - light.turn_off: step4
+      - delay: 120ms
+      - light.turn_off: step5
+      - delay: 120ms
+      - light.turn_off: step6
+      - delay: 120ms
+      - light.turn_off: step7
+      - delay: 120ms
+      - light.turn_off: step8
+      - delay: 120ms
+      - light.turn_off: step9
+      - delay: 120ms
+      - light.turn_off: step10
+      - delay: 120ms
+      - light.turn_off: step11
+      - delay: 120ms
+      - light.turn_off: step12
+      - delay: 120ms
+      - light.turn_off: step13
+      - delay: 120ms
+      - light.turn_off: step14
+      # - lambda: |-
+      #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+      #     for (int i {0}; i <= 14; i++) {
+      #       if (!lights[i]->remote_values.is_on()) continue;
+      #       auto call = lights[i]->turn_off();
+      #       call.set_transition_length(1000 + (150 * i));
+      #       call.perform();
+      #     }
+  - id: fade_down_off
+    then:
+      - light.turn_off: step14
+      - delay: 120ms
+      - light.turn_off: step13
+      - delay: 120ms
+      - light.turn_off: step12
+      - delay: 120ms
+      - light.turn_off: step11
+      - delay: 120ms
+      - light.turn_off: step10
+      - delay: 120ms
+      - light.turn_off: step9
+      - delay: 120ms
+      - light.turn_off: step8
+      - delay: 120ms
+      - light.turn_off: step7
+      - delay: 120ms
+      - light.turn_off: step6
+      - delay: 120ms
+      - light.turn_off: step5
+      - delay: 120ms
+      - light.turn_off: step4
+      - delay: 120ms
+      - light.turn_off: step3
+      - delay: 120ms
+      - light.turn_off: step2
+      - delay: 120ms
+      - light.turn_off: step1
+      - delay: 120ms
+      - light.turn_off: step0
+      # - lambda: |-
+      #     static LightState* lights[]={id(step0),id(step1),id(step2),id(step3),id(step4),id(step5),id(step6),id(step7),id(step8),id(step9),id(step10),id(step11),id(step12),id(step13),id(step14)};
+      #     for (int i {0}; i <= 14; i++) {
+      #       if (!lights[14 - i]->remote_values.is_on()) continue;
+      #       auto call = lights[14 - i]->turn_off();
+      #       call.set_transition_length(1000 + (150 * i));
+      #       call.perform();
+      #     }
   - id: darken
     then:
       - light.dim_relative:

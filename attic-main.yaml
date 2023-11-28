@@ -29,6 +29,10 @@ switch:
     pin: D8
     id: hexfet
     name: ${display_name} Lights
+  - platform: gpio
+    pin: D5
+    id: hexfet2
+    name: Grill Lights
 
 binary_sensor:
   - platform: gpio

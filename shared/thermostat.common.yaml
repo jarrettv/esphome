@@ -15,7 +15,8 @@ wifi:
 
 api:
   id: esp_api
-  password: !secret api_password
+  encryption:
+    key: !secret key
  
 ota:
   password: !secret ota_password
@@ -222,7 +223,7 @@ display:
       // draw boot screen
       if (id(startup_delay).is_running()) {
         it.image(0, 20, id(splash), COLOR_OFF, COLOR_ON);
-        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2021.12.15");
+        it.print((it.get_width() / 2), 52, id(font6), TextAlign::TOP_CENTER, "2022.11.27");
         return;
       }
 
@@ -307,7 +308,7 @@ display:
         it.image(0, 47, id(set_temp), COLOR_OFF, COLOR_ON);
 
         // draw cool bar
-        static Image* bars[]={id(bar1),id(bar2),id(bar3),id(bar4),id(bar5),id(bar6),id(bar7),id(bar8)};
+        static esphome::image::Image* bars[]={id(bar1),id(bar2),id(bar3),id(bar4),id(bar5),id(bar6),id(bar7),id(bar8)};
         int encoderVal = (int)id(encoder).state;
         int barIndex = encoderVal >= 0 ? encoderVal % 8 : (8 - abs(encoderVal % 8)) % 8;
         it.image(0, 55, bars[barIndex], COLOR_OFF, COLOR_ON);
@@ -399,7 +400,7 @@ switch:
     id: auto_display_disable
     name: ${node_friendly_name} Auto Display Disable # make it inverse so by default display works
     optimistic: true
-    restore_state: true
+    restore_mode: ALWAYS_ON
 
 climate:
   - platform: thermostat
@@ -411,8 +412,14 @@ climate:
       min_temperature: 55°F
       max_temperature: 92°F
       temperature_step: 1
-    default_target_temperature_low: 68°F # must be 4° apart to keep gui simple
-    default_target_temperature_high: 70°F
+    default_preset: Home
+    preset:
+      - name: Home
+        default_target_temperature_low: 68°F # must be 4° apart to keep gui simple
+        default_target_temperature_high: 70°F
+      - name: Away
+        default_target_temperature_low: 63°F
+        default_target_temperature_high: 77°F
     min_cooling_off_time: 300s
     min_cooling_run_time: 300s
     min_heating_off_time: 300s
